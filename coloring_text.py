@@ -53,10 +53,25 @@ def style_t(text: str,
             bg_color: str = None,
             attrs: List[str] = None,
             len_word: int = None,
-            agl=None):
+            agl=None,
+            height=1
+            ):
     if len_word:
+
         if len(text) > len_word:
+
+            # for index in range(height - 1):
+            #
+            #     text[:len_word] + '\n' + text[len_word:]
+            #
+            #     if len(text) < len_word:
+
+
+
             text = f"{text[: len_word - 2]}.."
+
+
+
         elif len(text) < len_word:
             if agl == 'center' and (len_word - len(text)) % 2 == 0:
                 text = f"{' ' * ((len_word - len(text)) // 2)}{text}{' ' * ((len_word - len(text)) // 2)}"

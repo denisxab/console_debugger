@@ -13,7 +13,7 @@ class MyTestCase(unittest.TestCase):
         Debugger.AllCountActiveInstance = []
         Debugger.AllCountSleepInstance = []
         Debugger.AllUseFileName = {}
-        self.Debug1 = Debugger(title="[DEBUG]",
+        self.Debug1 = Debugger(title_id="[DEBUG]",
 
                                fileConfig=dopen(file="debug.log",
                                                 mode="a",
@@ -26,13 +26,13 @@ class MyTestCase(unittest.TestCase):
 
     def test___addFileName_in_AllUseFileName(self):
         with self.assertRaises(FileExistsError):
-            Debug2 = Debugger(title="Test",
+            Debug2 = Debugger(title_id="Test",
                               fileConfig=dopen(file="debug.log",
                                                mode="w"),
                               )
 
     def test_changePrivateData(self):
-        testD = Debugger(title="Test", active=False)
+        testD = Debugger(title_id="Test", active=False)
 
         # Проверка защиты атрибута Debugger от внешних изменений
         self.assertEqual(self.Debug1.fileConfig,
@@ -111,7 +111,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_treadPrint(self):
 
-        Debug = Debugger(title="[DEBUG]",
+        Debug = Debugger(title_id="[DEBUG]",
 
                          fileConfig=dopen(file="debug1.log",
                                           mode="a",
@@ -121,7 +121,7 @@ class MyTestCase(unittest.TestCase):
                                            len_word=21)
                          )
 
-        Info = Debugger(title="[INFO]",
+        Info = Debugger(title_id="[INFO]",
 
                         fileConfig={"file": "info.log",
                                     "mode": "a",

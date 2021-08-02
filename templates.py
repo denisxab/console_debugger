@@ -13,11 +13,18 @@ def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=No
             }
 
 
-def dstyle(color: str = None, bg_color: str = None, attrs: List[str] = None, len_word: int = None):
+def dstyle(color: str = None,
+           bg_color: str = None,
+           attrs: List[str] = None,
+           len_word: int = None,
+           agl=None,
+           height=1):
     return {"color": color,
             "bg_color": bg_color,
             "attrs": attrs,
-            "len_word": len_word
+            "len_word": len_word,
+            "agl": agl,
+            "height": height
             }
 
 

@@ -17,7 +17,7 @@ class Debugger:
     GlobalRowBoard: str = ""
 
     def __init__(self,
-                 title: str,
+                 title_id: str,
                  *,
                  consoleOutput: bool = True,
                  fileConfig: Optional[Dict] = None,
@@ -25,9 +25,14 @@ class Debugger:
                  style_text: Optional[dstyle] = None
                  ):
 
+        """
+        # TODO: Создать проверку уникальности title_id!!!
+        # TODO: active = False должен отключать экземпляр и возвращать lambda *args: None
+        """
+
         if active:
             #
-            self.title: str = title
+            self.title: str = title_id
             Debugger.AllCountActiveInstance.append(self.title.strip())
             #
             self.__fileConfig: Optional[Dict] = None
@@ -38,9 +43,9 @@ class Debugger:
             self.consoleOutput: Optional[TextIO] = sys.stdout if consoleOutput else None
             self.style_text: dstyle = dstyle(len_word=len(self.title)) if not style_text else style_text
 
-            Debugger.AllInstance[title.strip()] = self
+            Debugger.AllInstance[title_id.strip()] = self
         else:
-            Debugger.AllCountSleepInstance.append(title)
+            Debugger.AllCountSleepInstance.append(title_id)
 
     def __getattribute__(self, item):
         res = {
@@ -144,7 +149,8 @@ class Debugger:
             arr: List[str] = []
             for k, v in Debugger.AllInstance.items():
                 if v.consoleOutput:
-                    text = style_t(k, agl="center", **v.style_text).present_text
+                    v.style_text['agl'] = 'center'
+                    text = style_t(k, **v.style_text).present_text
                     rowBoard += f"+{'-' * len(text)}"
                     rowWord += f"|{text}"
                     arr.append(text)
@@ -161,7 +167,7 @@ class Debugger:
 
 
 if __name__ == '__main__':
-    Debug = Debugger(title="[DEBUG]",
+    Debug = Debugger(title_id="[DEBUG]",
 
                      fileConfig=dopen(file="debug.log",
                                       mode="a",
@@ -171,7 +177,7 @@ if __name__ == '__main__':
                                        len_word=21)
                      )
 
-    Info = Debugger(title="[INFO]",
+    Info = Debugger(title_id="[INFO]",
 
                     fileConfig={"file": "info.log",
                                 "mode": "a",
@@ -187,5 +193,6 @@ if __name__ == '__main__':
     Debugger.GlobalManager(typePrint="grid")
 
     for i in range(10):
-        # print(f"Warning \t{str(i)}")
         Warning(f"Warning \t{str(i)}")
+        Debug(f"Debug \t{str(i)} \n your data")
+        Info(f"Info \t{str(i)}")
