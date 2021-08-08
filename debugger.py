@@ -96,10 +96,10 @@ class Debugger:
 
     def __getattribute__(self, item):
         res = {
-            "AllCountActiveInstance": lambda: Debugger.AllCountActiveInstance,
-            "AllCountSleepInstance": lambda: Debugger.AllCountSleepInstance,
-            "AllUseFileName": lambda: Debugger.AllUseFileName,
-            "AllInstance": lambda: Debugger.AllInstance,
+            "AllCountActiveInstance": lambda: Debugger.AllCountActiveInstance.copy(),
+            "AllCountSleepInstance": lambda: Debugger.AllCountSleepInstance.copy(),
+            "AllUseFileName": lambda: Debugger.AllUseFileName.copy(),
+            "AllInstance": lambda: Debugger.AllInstance.copy(),
             "fileConfig": lambda: self.__dict__["_Debugger__fileConfig"],
             "title": lambda: self.__dict__["_Debugger__title_id"]
         }.get(item, None)
