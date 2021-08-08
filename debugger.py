@@ -4,7 +4,7 @@ import sys
 from pprint import pformat
 from typing import Union, TextIO, Tuple, Optional, Dict, List
 
-from coloring_text import *
+from coloring_text import StyleText, style_t
 
 
 def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):

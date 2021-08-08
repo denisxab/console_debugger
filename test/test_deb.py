@@ -1,6 +1,7 @@
 import unittest
 
 from debugger import *
+from coloring_text import *
 
 
 class MyTestCase(unittest.TestCase):
