@@ -24,7 +24,7 @@ class View:
                                           bg="#487861",
                                           command=lambda: self.__set_geometer(False)).pack(fill="x")
 
-        self.windowTk.protocol("WM_DELETE_WINDOW", self.__set_geometer)
+        self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
         self.windowTk.mainloop()
 
     def __get_geometer(self) -> str:
@@ -42,8 +42,6 @@ class View:
             w = self.windowTk.winfo_width()
             h = self.windowTk.winfo_height()
             f.write(f"{w}x{h}+{x}+{y}")
-        if is_exit:
-            self.__del()
 
     @classmethod
     def clear_console(cls, index_console: int):
