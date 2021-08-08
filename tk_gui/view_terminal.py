@@ -9,6 +9,7 @@ class View:
         self.windowTk = Tk()
         self.windowTk.title("debugger_tk")
         self.windowTk.iconbitmap('icons.ico')
+        self.windowTk.attributes("-topmost", True)
         self.windowTk.geometry(self.__get_geometer())
 
         self.frameConsole = Frame(self.windowTk,
