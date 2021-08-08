@@ -1,10 +1,13 @@
 import io
 import os
 import sys
+import threading
+import time
 from pprint import pformat
 from typing import Union, TextIO, Tuple, Optional, Dict, List
 
 from coloring_text import StyleText, style_t
+from tk_gui import view_terminal
 
 
 def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
@@ -37,11 +40,15 @@ class Debugger:
     AllUseFileName: Dict[str, str] = {}  # Используемые файлы для записи
     AllInstance: Dict[str, object] = {}
 
+    # Для таблицы
     GlobalLenRows: List[Tuple[str, int]] = []
     GlobalRowBoard: str = ""
 
+    # Для Tkinter
+    GlobalTkinterConsole: bool = False
+
     def __init__(self,
-                 title_id: str,
+                 title_name: str,
                  *,
                  consoleOutput: bool = True,
                  fileConfig: Optional[Dict] = None,
@@ -54,7 +61,7 @@ class Debugger:
             + style_text = Стиль отображения
 
         public get:
-            + title_id = Уникальное имя дебагера
+            + title_name = Уникальное имя дебагера
             + fileConfig = Конфигурация для файла
             + AllCountActiveInstance = Все активные дебагеры
             + AllCountSleepInstance = Все приостановленный дебагиры
@@ -65,15 +72,15 @@ class Debugger:
         # active
         self.__active: bool = active
         if self.__active:
-            Debugger.AllInstance[title_id.strip()] = self
+            Debugger.AllInstance[title_name.strip()] = self
         else:
-            Debugger.AllCountSleepInstance.append(title_id)
-        # title_id
-        self.__title_id: str = title_id
-        if self.__title_id not in Debugger.AllCountActiveInstance:
-            Debugger.AllCountActiveInstance.append(self.__title_id.strip())
+            Debugger.AllCountSleepInstance.append(title_name)
+        # title_name
+        self.__title_name: str = title_name
+        if self.__title_name not in Debugger.AllCountActiveInstance:
+            Debugger.AllCountActiveInstance.append(self.__title_name.strip())
         else:
-            raise NameError("A instance of a class can only have to unique title_id")
+            raise NameError("A instance of a class can only have to unique title_name")
         # fileConfig
         self.__fileConfig: Optional[Dict] = fileConfig
         if fileConfig:
@@ -82,17 +89,20 @@ class Debugger:
         # consoleOutput
         self.consoleOutput: Optional[TextIO] = sys.stdout if consoleOutput else None
         # style_text
-        self.style_text: dstyle = dstyle(len_word=len(self.__title_id)) if not style_text else style_text
+        self.style_text: dstyle = dstyle(len_word=len(self.__title_name)) if not style_text else style_text
+
+        # id
+        self.__id = len(Debugger.AllCountActiveInstance) - 1
 
     def active(self):
         self.__active = True
-        Debugger.AllCountSleepInstance.remove(self.__title_id)
-        Debugger.AllInstance[self.__title_id] = self
+        Debugger.AllCountSleepInstance.remove(self.__title_name)
+        Debugger.AllInstance[self.__title_name] = self
 
     def deactivate(self):
         self.__active = False
-        Debugger.AllInstance.pop(self.__title_id)
-        Debugger.AllCountSleepInstance.append(self.__title_id)
+        Debugger.AllInstance.pop(self.__title_name)
+        Debugger.AllCountSleepInstance.append(self.__title_name)
 
     def __getattribute__(self, item):
         res = {
@@ -118,16 +128,20 @@ class Debugger:
                 with open(**self.__fileConfig) as f:
                     # Сохранять в файл не стилизованный текст
                     print(
-                        f"|{self.__title_id}|{repr(textOutput)}|",
+                        f"|{self.__title_name}|{repr(textOutput)}|",
                         *args,
                         sep=sep, end=end, file=f)
 
             if self.consoleOutput:
-
+                # Таблица
                 if Debugger.GlobalLenRows:
                     print(self.__designerTable(textOutput), end='')
+                # Tkinter
+                elif Debugger.GlobalTkinterConsole:
+                    view_terminal.View.Arr_textWidget[self.__id].insert("end", f"{textOutput.present_text}\n")
+                # Без стилей
                 else:
-                    print(f"|{self.__title_id}|{textOutput}|", *args, sep=sep, end=end)
+                    print(f"|{self.__title_name}|{textOutput}|", *args, sep=sep, end=end)
 
     def __repr__(self) -> str:
         res = {"AllCountActiveInstance": Debugger.AllCountActiveInstance,
@@ -137,7 +151,7 @@ class Debugger:
         return pformat(res, indent=1, width=30, depth=2)
 
     def __str__(self) -> str:
-        return repr(self.__title_id)
+        return repr(self.__title_name)
 
     def __designerTable(self, textOutput: StyleText) -> str:
         """
@@ -151,7 +165,7 @@ class Debugger:
         for height_item in textOutput.present_text.split('\n'):
             height_item = style_t(height_item, **self.style_text).style_text
             for item in Debugger.GlobalLenRows:
-                if item[0] == self.__title_id:
+                if item[0] == self.__title_name:
                     res_print += f"|{height_item}"
                 else:
                     res_print += f"|{' ' * item[1]}"
@@ -167,7 +181,7 @@ class Debugger:
         """
         absFileName = os.path.abspath(file_name).replace("\\", "/")
         if not Debugger.AllUseFileName.get(absFileName, False):
-            Debugger.AllUseFileName[absFileName] = self.__title_id.strip()
+            Debugger.AllUseFileName[absFileName] = self.__title_name.strip()
         else:
             raise FileExistsError("A single instance of a class can write to only one file")
 
@@ -179,6 +193,7 @@ class Debugger:
             cls.AllCountActiveInstance = ["GLOBAL_DISABLE"]
             return None
 
+        # Отображать таблицу в консоли
         if typePrint == "grid":
             rowBoard: str = ""
             rowWord: str = ""
@@ -198,19 +213,33 @@ class Debugger:
             row: str = f"{rowBoard}\n{rowWord}\n{rowBoard.replace('-', '=')}"
             cls.GlobalRowBoard = rowBoard
             print(row)
-        else:
-            cls.GlobalLenRows.clear()
-            cls.GlobalRowBoard = ""
+            return None
+
+        # Отображать в Tkinter
+        elif typePrint == "tk":
+            cls.GlobalTkinterConsole = True
+            threading.Thread(target=view_terminal.View,
+                             args=(cls.AllCountActiveInstance,)).start()
+
+            # Ждать пока окно создаться
+            while view_terminal.View.Arr_textWidget == []:
+                time.sleep(0.1)
+
+            return None
+
+        cls.GlobalTkinterConsole = False
+        cls.GlobalLenRows.clear()
+        cls.GlobalRowBoard = ""
 
 
 def printD(name_instance: Debugger, text: str, *args, **kwargs):
     name_instance(textOutput=text, *args, **kwargs)
 
 
-dDEBUG = {"title_id": "[DEBUG]", "style_text": dstyle(**{"len_word": 25})}
-dINFO = {"title_id": "[INFO]", "style_text": dstyle(**{"color": "blue", "len_word": 25})}
-dWARNING = {"title_id": "[WARNING]", "style_text": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31})}
-dEXCEPTION = {"title_id": "[EXCEPTION]", "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}
+dDEBUG = {"title_name": "[DEBUG]", "style_text": dstyle(**{"len_word": 25})}
+dINFO = {"title_name": "[INFO]", "style_text": dstyle(**{"color": "blue", "len_word": 25})}
+dWARNING = {"title_name": "[WARNING]", "style_text": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31})}
+dEXCEPTION = {"title_name": "[EXCEPTION]", "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}
 
 if __name__ == '__main__':
     ...

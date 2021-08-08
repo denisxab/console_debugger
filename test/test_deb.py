@@ -1,7 +1,7 @@
 import unittest
 
-from debugger import *
 from coloring_text import *
+from debugger import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -10,7 +10,7 @@ class MyTestCase(unittest.TestCase):
         Debugger.AllCountActiveInstance = []
         Debugger.AllCountSleepInstance = []
         Debugger.AllUseFileName = {}
-        self.Debug1 = Debugger(title_id="[DEBUG_TEST]",
+        self.Debug1 = Debugger(title_name="[DEBUG_TEST]",
 
                                fileConfig=dopen(file="debug.log",
                                                 mode="a",
@@ -23,13 +23,13 @@ class MyTestCase(unittest.TestCase):
 
     def test___addFileName_in_AllUseFileName(self):
         with self.assertRaises(FileExistsError):
-            Debug2 = Debugger(title_id="Test",
+            Debug2 = Debugger(title_name="Test",
                               fileConfig=dopen(file="debug.log",
                                                mode="w"),
                               )
 
     def test_changePrivateData(self):
-        testD = Debugger(title_id="Test", active=False)
+        testD = Debugger(title_name="Test", active=False)
 
         # Проверка защиты атрибута Debugger от внешних изменений
         self.assertEqual(self.Debug1.fileConfig,

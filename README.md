@@ -11,17 +11,18 @@
 
 Можно вручную указать параметры экземпляра
 
-- `Debug_Name = Debugger(title_id: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, active: bool = True, style_text: Optional[dstyle] = None)`
-    - `title_id` = Уникальное имя экземпляра которое будет отображаться в выводе.  
+- `Debug_Name = Debugger(title_name: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, active: bool = True, style_text: Optional[dstyle] = None)`
+    - `title_name` = Уникальное имя экземпляра которое будет отображаться в выводе.  
     
-    - `consoleOutput` = Переключатель режима отображения в консоль, **не влияет на запись в файл!**.  
+    - `consoleOutput` = on/off отображения в консоль или другие
+    визуальные выходы, **не влияет на запись в файл!**.  
     
     - `fileConfig` = Конфигурация записи в файл, входные параметры такие же как и у стандартной функции `open()`  
-        передавать в формате Dict{"nameParams":"arg"}. Для удобного формирования параметров можно  
+        передавать в формате `Dict{"file":"test.log", ... }`. Для удобного формирования параметров можно  
          пользоваться функцией `dopen()`.  
     
-    - `active` = Переключатель жизни экземпляра, Если `False` экземпляр не будет формироваться  
-         и будет равен `lambda *args: None`, а также будет добавлен в массив `Debugger.AllCountSleepInstance`.  
+    - `active` = on/off жизни экземпляра, Если `False` экземпляр 
+    будет равен `lambda *args: None`, а также будет добавлен в массив `Debugger.AllCountSleepInstance`.  
     
     - `style_text` = Стиль отображения текста. Для удобного формирования параметров можно  
         пользоваться функцией `dstyle`.  
@@ -42,8 +43,10 @@
 - `Debugger.GlobalManager(global_disable=False, typePrint: Optional[str] = "grid"):`
     - `global_disable` = Вы можете отключить все экземпляры разом, они будут равны `lambda *args: None`
     - `typePrint=` = Глобальный стиль отображения данных
-        - `"grid"` = Стиль таблица
-        - `None` = Без стиля
+        - `"grid"` = Стиль таблица ![](https://i.imgur.com/EwePtfk.png)
+        - `"tk"` = Будет открыто **Tkinter** окно и 
+        все записи будут направлены в него![](https://i.imgur.com/OJP19OR.png)
+        - `None` = Без стиля ![](https://i.imgur.com/6BXZOBc.png)
 
 ## 3 Использовать в коде
 
@@ -67,10 +70,19 @@
 
 ## Использовать свои стили, вызывать экземпляры напрямую
 
+
+Для наглядности создадим функцию для генерации случайного слово
+```python
+import random
+import string             
+# Сгенерировать случайное слово
+random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(1, 40)))
+```
+
 ```python
 from debugger import *
 
-Debug = Debugger(title_id="[DEBUG]",
+Debug = Debugger(title_name="[DEBUG]",
 
                  fileConfig=dopen(file="debug.log",
                                   mode="a",
@@ -79,7 +91,7 @@ Debug = Debugger(title_id="[DEBUG]",
                  style_text=dstyle(bg_color="bg_blue",
                                    len_word=21)
                  )
-Info = Debugger(title_id="[INFO]",
+Info = Debugger(title_name="[INFO]",
 
                 fileConfig={"file": "info.log",
                             "mode": "a", "encoding": "utf-8"},
@@ -93,9 +105,9 @@ Debugger.GlobalManager(typePrint="grid")
 
 if __name__ == '__main__':
     for i in range(10):
-        Warning(f"Warning \t{str(i)}")
-        Debug(f"Debug \t{str(i)} \n your data")
-        Info(f"Info \t{str(i)}")
+        Warning(random_word())
+        Debug(random_word())
+        Info(random_word())
 ```
 
 ## Использовать готовые стили, вызывать `printD`
@@ -111,7 +123,52 @@ Debugger.GlobalManager(typePrint="grid")
 
 if __name__ == '__main__':
     for i in range(10):
-        printD(Debug, "123")
-        printD(Warning, "123")
-        printD(Info, "123")
+        printD(Debug, random_word())
+        printD(Warning, random_word())
+        printD(Info, random_word())
 ```
+
+## Использовать GUI Tkinter
+```python
+from debugger import *
+
+
+Debug = Debugger(**dDEBUG)
+Info = Debugger(**dINFO)
+Warning = Debugger(**dWARNING)
+TEST = Debugger("TEST")
+
+Debugger.GlobalManager(typePrint="tk")
+
+
+for i in range(10):
+    printD(Debug, random_word())
+    printD(Info, random_word())
+    printD(Warning, random_word())
+    printD(TEST, random_word())
+    time.sleep(0.3) # Задержка для наглядности поступления сообщений
+```
+
+
+## Советы
+
+### Про интерфейс GUI Tkinter
+- Если нажать на заголовок консоли, то она отчистится
+- Если нажать нижнею кнопку `save geometry` то вы
+сохраните положение окна на следующий запуск
+
+
+### Про доступную информации об экземпляре `Debugger`
+- public set:
+    + `consoleOutput` = Вывод в консоль
+    + `style_text` = Стиль отображения текста
+    + `active()` = Включить дебагер
+    + `deactivate()` = Отключить дебагер
+
+- public get:
+    + `title_name` = Уникальное имя дебагера
+    + `fileConfig` = Конфигурация для файла
+    + `AllCountActiveInstance` = Все активные дебагеры
+    + `AllCountSleepInstance` = Все приостановленный дебагиры
+    + `AllUseFileName` = Все используемые имена файлов
+    + `AllInstance` = Все экземпляры дебагеров
