@@ -1,5 +1,4 @@
 import os
-import sys
 
 __all__ = ["style_t", "cprint", "StyleText"]
 
@@ -57,7 +56,7 @@ def style_t(text: str,
             height=2
             ):
     if len_word:
-
+        # Выравнивание текста по центру
         if agl == 'center':
             if len(text) > len_word:
                 # Если длинна слова больше разрешённой, то и центрировать не нужно, просто обрезаем строку
@@ -124,13 +123,15 @@ def cprint(text, color: str = None,
            end='\n',
            file=None,
            flush=False,
-           len_word: int = None):
-    print((style_t(text, color, bg_color, attrs, len_word)), sep=sep, end=end, file=file, flush=flush)
+           len_word: int = None,
+           height=2):
+    print(style_t(text, color, bg_color, attrs, len_word, height), sep=sep, end=end, file=file, flush=flush)
 
 
 if __name__ == '__main__':
-    cprint('Hello, World!',
-           color='red',
-           bg_color="bg_blue",
-           attrs=["concealed"],
-           file=sys.stdout)
+    ...
+    # cprint('Hello, World!',
+    #        color='red',
+    #        bg_color="bg_blue",
+    #        attrs=["concealed"],
+    #        file=sys.stdout)
