@@ -11,8 +11,8 @@
 
 Можно вручную указать параметры экземпляра
 
-- `Debug_Name = Debugger(title: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, active: bool = True, style_text: Optional[dstyle] = None)`
-    - `title` = Уникальное имя экземпляра которое будет отображаться в выводе.  
+- `Debug_Name = Debugger(title_id: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, active: bool = True, style_text: Optional[dstyle] = None)`
+    - `title_id` = Уникальное имя экземпляра которое будет отображаться в выводе.  
     
     - `consoleOutput` = Переключатель режима отображения в консоль, **не влияет на запись в файл!**.  
     
