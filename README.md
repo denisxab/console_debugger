@@ -43,10 +43,18 @@
 - `Debugger.GlobalManager(global_disable=False, typePrint: Optional[str] = "grid"):`
     - `global_disable` = Вы можете отключить все экземпляры разом, они будут равны `lambda *args: None`
     - `typePrint=` = Глобальный стиль отображения данных
-        - `"grid"` = Стиль таблица ![](https://i.imgur.com/EwePtfk.png)
+        - `"grid"` = Стиль таблица 
+        
+        ![](https://i.imgur.com/EwePtfk.png)
+        
         - `"tk"` = Будет открыто **Tkinter** окно и 
-        все записи будут направлены в него![](https://i.imgur.com/OJP19OR.png)
-        - `None` = Без стиля ![](https://i.imgur.com/6BXZOBc.png)
+        все записи будут направлены в него
+        
+        ![](https://i.imgur.com/OJP19OR.png)
+        
+        - `None` = Без стиля 
+        
+        ![](https://i.imgur.com/6BXZOBc.png)
 
 ## 3 Использовать в коде
 
