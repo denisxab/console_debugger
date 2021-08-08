@@ -18,7 +18,7 @@ def dstyle(color: str = None,
            attrs: List[str] = None,
            len_word: int = None,
            agl=None,
-           height=1):
+           height=2):
     return {"color": color,
             "bg_color": bg_color,
             "attrs": attrs,
@@ -29,7 +29,7 @@ def dstyle(color: str = None,
 
 
 dDEBUG = {
-    # "bg_color": "bg_blue",
+    "bg_color": "bg_blue",
     "len_word": 25
 }
 

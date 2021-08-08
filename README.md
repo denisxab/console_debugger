@@ -11,7 +11,7 @@
 ---
 # Как использовать ?
 
-## Cоздать экземпляры класса
+## Создать экземпляры класса
 Сначала нужно создать экземпляры класса Debugger, они имеют
 следующие параметры
 
@@ -52,12 +52,20 @@ Debugger.GlobalManager(global_disable=False,
 >>![Debugger](https://i.imgur.com/0n4G80k.png)
 
 ## Использовать в коде
+
+Вызывать экземпляр
+
 ```python
-Debug(text,
-      *args, sep=' ', end='\n')
+Debug(text,*args, sep=' ', end='\n')
 ```
 - `text` = Строка
 - `*args, sep=' ', end='\n'` = такие же, как и у встроенной функции `print()`
+
+
+Либо использовать `printD`
+```python
+printD(Debug, text, *args, sep=' ', end='\n')
+```
 
 ---
 
@@ -92,9 +100,23 @@ Warning = Debugger("[WARNING]", style_text=dstyle(len_word=25))
 Debugger.GlobalManager(typePrint="grid")
 
 for i in range(10):
-    Warning(f"Warning \t{str(i)}")
-    Debug(f"Debug \t{str(i)} \n your data")
-    Info(f"Info \t{str(i)}")
+    printD(Warning,f"Warning \t{str(i)}")
+    printD(Debug,f"Debug \t{str(i)} \n your data")
+    printD(Info,f"Info \t{str(i)}")
+```
+
+## Пример 2 Использовать готовые стили
+```python
+Debug = Debugger(title_id="[DEBUG]", style_text=dDEBUG)
+Info = Debugger(title_id="[INFO]", style_text=dINFO)
+Warning = Debugger(title_id="[WARNING]", style_text=dWARNING)
+
+Debugger.GlobalManager(typePrint="grid")
+
+for i in range(10):
+    printD(Debug, "123")
+    printD(Warning, "123")
+    printD(Info, "123")
 ```
 
 

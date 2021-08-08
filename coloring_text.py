@@ -54,29 +54,46 @@ def style_t(text: str,
             attrs: List[str] = None,
             len_word: int = None,
             agl=None,
-            height=1
+            height=2
             ):
     if len_word:
 
-        if len(text) > len_word:
+        if agl == 'center':
+            if len(text) > len_word:
+                # Если длинна слова больше разрешённой, то и центрировать не нужно, просто обрезаем строку
+                text = f"{text[:len_word - 2]}.."
 
-            # for index in range(height - 1):
-            #
-            #     text[:len_word] + '\n' + text[len_word:]
-            #
-            #     if len(text) < len_word:
-
-
-
-            text = f"{text[: len_word - 2]}.."
-
-
-
-        elif len(text) < len_word:
-            if agl == 'center' and (len_word - len(text)) % 2 == 0:
-                text = f"{' ' * ((len_word - len(text)) // 2)}{text}{' ' * ((len_word - len(text)) // 2)}"
             else:
-                text = f"{text}{' ' * (len_word - len(text))}"
+                # Если нужно центрировать строку меньше разрешённой длины
+                offset = (len_word - len(text)) % 2
+                text = f"{' ' * (((len_word - len(text)) // 2) + offset)}{text}{' ' * ((len_word - len(text)) // 2)}"
+
+        else:
+            # Заполняем динамический массив символами, если достигаем максимума длины то добавляем перенос строки
+            arr_text: List[str] = []
+            for index, sbl in enumerate(text):
+                # Если слово достигла максимума по ширине и высоте, то обрезаем его
+                if index + 2 > len_word * height:
+                    for _ in range(-index % len_word):
+                        arr_text.append(".")
+                    break
+                # Если слово достигло максимума по ширине, но не по высоте, то добавляем перенос строки
+                if index % len_word == 0:
+                    arr_text.append('\n')
+
+                # Пользовательские переносы строк нарушают структуру, поэтому лучше их игнорировать, и
+                # ставить переносы строки по правилам этого алгоритма
+                if text[index] != '\n':
+                    # Добавляем символы в динамический массив
+                    arr_text.append(sbl)
+            else:
+                # Заполняем пустоту у последней строчки чтобы была одинаковая длинна столбцов
+                for _ in range(-len(text) % len_word):
+                    arr_text.append(" ")
+            # Убираем первый ненужный перенос строки
+            arr_text.pop(0)
+            # Конвертируем массив в строку
+            text = ''.join(arr_text)
 
     Style_text = text
 

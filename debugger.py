@@ -149,8 +149,9 @@ class Debugger:
             arr: List[str] = []
             for k, v in Debugger.AllInstance.items():
                 if v.consoleOutput:
-                    v.style_text['agl'] = 'center'
-                    text = style_t(k, **v.style_text).present_text
+                    v1 = v.style_text.copy()
+                    v1['agl'] = 'center'
+                    text = style_t(k, **v1).present_text
                     rowBoard += f"+{'-' * len(text)}"
                     rowWord += f"|{text}"
                     arr.append(text)
@@ -166,33 +167,18 @@ class Debugger:
             cls.GlobalRowBoard = ""
 
 
+def printD(name_instance: Debugger, text: str, *args, **kwargs):
+    name_instance(textOutput=text, *args, **kwargs)
+
+
 if __name__ == '__main__':
-    Debug = Debugger(title_id="[DEBUG]",
-
-                     fileConfig=dopen(file="debug.log",
-                                      mode="a",
-                                      encoding="utf-8"),
-
-                     style_text=dstyle(bg_color="bg_blue",
-                                       len_word=21)
-                     )
-
-    Info = Debugger(title_id="[INFO]",
-
-                    fileConfig={"file": "info.log",
-                                "mode": "a",
-                                "encoding": "utf-8"},
-
-                    style_text=dstyle(len_word=25),
-
-                    consoleOutput=False
-                    )
-
-    Warning = Debugger("[WARNING]", style_text=dstyle(len_word=25))
+    Debug = Debugger(title_id="[DEBUG]", style_text=dstyle(len_word=10, height=8))
+    Info = Debugger(title_id="[INFO]", style_text=dINFO)
+    Warning = Debugger(title_id="[WARNING]", style_text=dWARNING)
 
     Debugger.GlobalManager(typePrint="grid")
 
-    for i in range(10):
-        Warning(f"Warning \t{str(i)}")
-        Debug(f"Debug \t{str(i)} \n your data")
-        Info(f"Info \t{str(i)}")
+    for i in range(2):
+        printD(Debug, "qwertyuiopasdfddsDXWqeqewqweqweqwewqdwQ")
+        printD(Warning, "12312")
+        printD(Info, "1234")
