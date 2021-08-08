@@ -43,7 +43,7 @@ class View:
             h = self.windowTk.winfo_height()
             f.write(f"{w}x{h}+{x}+{y}")
         if is_exit:
-            self.windowTk.destroy()
+            self.__del()
 
     @classmethod
     def clear_console(cls, index_console: int):
@@ -92,6 +92,10 @@ class View:
             ptr_arr_textWidget.append(txt)
             frameConsole.pack(fill="both", expand=True)
         return ptr_arr_textWidget
+
+    def __del(self):
+        View.Arr_textWidget = []
+        self.windowTk.destroy()
 
 
 if __name__ == '__main__':

@@ -136,8 +136,8 @@ class Debugger:
                 # Таблица
                 if Debugger.GlobalLenRows:
                     print(self.__designerTable(textOutput), end='')
-                # Tkinter
-                elif Debugger.GlobalTkinterConsole:
+                # Tkinter если окно закрыто то перенаправляем вывод в стандартную консоль
+                elif Debugger.GlobalTkinterConsole and view_terminal.View.Arr_textWidget:
                     view_terminal.View.Arr_textWidget[self.__id].insert("end", f"{textOutput.present_text}\n")
                 # Без стилей
                 else:
@@ -218,7 +218,8 @@ class Debugger:
         # Отображать в Tkinter
         elif typePrint == "tk":
             cls.GlobalTkinterConsole = True
-            threading.Thread(target=view_terminal.View,
+            threading.Thread(name='Th_debugger_tkinter',
+                             target=view_terminal.View,
                              args=(cls.AllCountActiveInstance,)).start()
 
             # Ждать пока окно создаться
