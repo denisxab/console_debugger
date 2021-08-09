@@ -1,92 +1,104 @@
+import random
+import string
 import unittest
 
-from coloring_text import *
 from debugger import *
+
+# Сгенерировать случайное слово
+random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(4, 100)))
 
 
 class MyTestCase(unittest.TestCase):
 
     def setUp(self):
-        Debugger.AllCountActiveInstance = []
-        Debugger.AllCountSleepInstance = []
+        Debugger.AllActiveInstance = []
+        Debugger.AllSleepInstance = []
         Debugger.AllUseFileName = {}
-        self.Debug1 = Debugger(title_name="[DEBUG_TEST]",
 
-                               fileConfig=dopen(file="debug.log",
-                                                mode="a",
-                                                encoding="utf-8"),
+        self.Debug = Debugger(**dDEBUG)
+        self.Info = Debugger(**dINFO)
+        self.Warning = Debugger(**dWARNING)
+        self.TEST = Debugger(False, "TEST")
 
-                               style_text=dstyle(bg_color="bg_blue",
-                                                 len_word=15)
+        self.TEST_File = Debugger(True, "TEST_File", fileConfig=dopen(file="debug.log",
+                                                                      mode="a",
+                                                                      encoding="utf-8"))
 
-                               )
-
+    # Проверка внутренних переменных
     def test___addFileName_in_AllUseFileName(self):
-        with self.assertRaises(FileExistsError):
-            Debug2 = Debugger(title_name="Test",
-                              fileConfig=dopen(file="debug.log",
-                                               mode="w"),
-                              )
 
-    def test_changePrivateData(self):
-        testD = Debugger(title_name="Test", active=False)
+        Debugger.GlobalManager(typePrint="grid")
 
-        # Проверка защиты атрибута Debugger от внешних изменений
-        self.assertEqual(self.Debug1.fileConfig,
+        self.assertEqual(self.Debug.title_name, '[DEBUG]')
+        self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]','TEST_File'])
+        self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
+        self.assertEqual(self.Debug.AllUseFileName,
+                         {'C:/Users/denis/PycharmProjects/console_debugger/test/debug.log': 'TEST_File'})
+        self.assertEqual(len(self.Debug.AllInstance), 5)
+        self.assertEqual(self.Debug.GlobalLenRows, [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
+        self.assertEqual(self.Debug.GlobalRowBoard,
+                         "+-------------------------+-------------------------+-------------------------------+---------+")
+        self.assertEqual(self.Debug.GlobalTkinterConsole, False)
+        self.assertEqual(self.TEST_File.fileConfig,
                          {'file': 'debug.log', 'mode': 'a', 'buffering': 8192, 'encoding': 'utf-8', 'errors': None,
                           'newline': None, 'closefd': True})
 
-        self.assertEqual(self.Debug1.AllCountActiveInstance, ["[DEBUG_TEST]", "Test"])
-        self.assertEqual(self.Debug1.AllCountSleepInstance, ['Test'])
-        self.assertEqual(self.Debug1.AllUseFileName,
-                         {'C:/Users/denis/PycharmProjects/console_debugger/test/debug.log': '[DEBUG_TEST]'})
+        # Нельзя добавлять дебагеры с одинаковым `title_name`
+        with self.assertRaises(NameError):
+            Debug2 = Debugger(True, title_name="[DEBUG]")
+
+        # Нельзя добавлять дебагеры с одинаковым именем файла `fileConfig`
+        with self.assertRaises(FileExistsError):
+            Debug2 = Debugger(True, title_name="test",
+                              fileConfig=dopen(file="debug.log",
+                                               mode="w"), )
 
     def test__str__repr__(self):
-        self.assertEqual(str(self.Debug1), "'[DEBUG_TEST]'")
-        self.assertEqual(self.Debug1.title, "[DEBUG_TEST]")
-        self.assertEqual(len(repr(self.Debug1)), 834)
+        self.assertEqual(str(self.Debug), "'[DEBUG]'")
+        self.assertEqual(len(repr(self.Debug)), 683)
 
-    def test___call__(self):
-        self.Debug1("Test Message")
+    # @unittest.skip("grid")
+    def test_GlobalManager_grid(self):
+        global random_word
+        Debugger.GlobalManager(typePrint="grid")
+        for i in range(10):
+            printD(self.Debug, random_word())
+            printD(self.Info, random_word())
+            printD(self.Warning, random_word())
+            printD(self.TEST, random_word())
+            printD(self.TEST_File, random_word())
 
-    def test_style_t(self):
-        test_text_style_shotLen = style_t("test", color="red", bg_color="bg_blue", attrs=["bold"], len_word=3)
-        self.assertEqual(repr(test_text_style_shotLen), 'tes\nt  ')
-        self.assertEqual(str(test_text_style_shotLen), '[1m[44m[31mtes\nt  [0m')
+    # @unittest.skip("None")
+    def test_GlobalManager_none(self):
+        global random_word
+        Debugger.GlobalManager(typePrint=None)
+        for i in range(10):
+            printD(self.Debug, random_word())
+            printD(self.Info, random_word())
+            printD(self.Warning, random_word())
+            printD(self.TEST, random_word())
+            printD(self.TEST_File, random_word())
 
-        test_text_style_LongLen = style_t("test", color="red", bg_color="bg_blue", attrs=["bold"], len_word=10)
-        self.assertEqual(repr(test_text_style_LongLen), 'test      ')
-        self.assertEqual(str(test_text_style_LongLen), '\x1b[1m\x1b[44m\x1b[31mtest      \x1b[0m')
-
-    def test_cprint(self):
-        cprint("test", color="red", bg_color="bg_blue", attrs=["bold"], len_word=3)
+    @unittest.skip("tk")
+    def test_GlobalManager_tk(self):
+        global random_word
+        Debugger.GlobalManager(typePrint="tk")
+        for i in range(10):
+            printD(self.Debug, random_word())
+            printD(self.Info, random_word())
+            printD(self.Warning, random_word())
+            printD(self.TEST_File, random_word())
 
     def test_GlobalManager(self):
-        testWarning = Debugger("[WARNING]", style_text=dstyle(len_word=25))
-        Debugger.GlobalManager()
-        self.assertEqual(Debugger.GlobalLenRows, [('[DEBUG_TEST]', 15), ('[WARNING]', 25)])
-        self.assertEqual(Debugger.GlobalRowBoard, '+---------------+-------------------------+')
-        self.Debug1("12313H\nello wor\tld ")
-        self.setUp()
-
-        testWarning = Debugger("[WARNING]", style_text=dstyle(len_word=25))
-        Debugger.GlobalManager(typePrint=None)
-        self.assertEqual(Debugger.GlobalLenRows, [])
-        self.assertEqual(Debugger.GlobalRowBoard, '')
-        self.Debug1("12313Hello wor\tld ")
-        testWarning("Hello wor\tld ")
-
-        self.assertEqual(Debugger.AllCountSleepInstance, [])
-        self.assertEqual(Debugger.AllCountActiveInstance, ['[DEBUG_TEST]', '[WARNING]'])
-
-        saveFun = Debugger.__call__
-
-        Debugger.GlobalManager(global_disable=True)
-
-        self.assertEqual(Debugger.AllCountSleepInstance, ["GLOBAL_DISABLE"])
-        self.assertEqual(Debugger.AllCountActiveInstance, ["GLOBAL_DISABLE"])
-
-        Debugger.__call__ = saveFun
+        # Проверка off/on всех дебагеров
+        self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
+        self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
+        Debugger.GlobalManager(global_active=False)
+        self.assertEqual(Debugger.AllActiveInstance, [])
+        self.assertEqual(Debugger.AllSleepInstance, ['TEST', '[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
+        Debugger.GlobalManager(global_active=True)
+        self.assertEqual(Debugger.AllSleepInstance, [])
+        self.assertEqual(Debugger.AllActiveInstance, [ '[DEBUG]', '[INFO]', '[WARNING]', 'TEST','TEST_File'])
 
     def test_StyleText_strip(self):
         a = " 3132  "
@@ -97,66 +109,32 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(StyleText(a1, "").strip(), "3132")
         self.assertEqual(StyleText(a2, "").strip(), "3132")
 
-    def test_treadPrint(self):
-        ...
-        # Debug = Debugger(title_id="[DEBUG_TEST]",
-        #
-        #                  fileConfig=dopen(file="debug1.log",
-        #                                   mode="a",
-        #                                   encoding="utf-8"),
-        #
-        #                  style_text=dstyle(bg_color="bg_blue",
-        #                                    len_word=21)
-        #                  )
-        #
-        # Info = Debugger(title_id="[INFO]",
-        #
-        #                 fileConfig={"file": "info.log",
-        #                             "mode": "a",
-        #                             "encoding": "utf-8"},
-        #
-        #                 style_text=dstyle(len_word=25),
-        #
-        #                 consoleOutput=False
-        #                 )
-        #
-        # Warning = Debugger("[WARNING]", style_text=dstyle(len_word=25))
-        #
-        # Debugger.GlobalManager(typePrint="grid")
-        #
-        # def testPrintThread1():
-        #     nonlocal Debug
-        #     for i in range(10):
-        #         # print(f"Deb \t{str(i)}")
-        #         Debug(f"Deb \t{str(i)}")
-        #
-        # def testPrintThread2():
-        #     nonlocal Warning
-        #     for i in range(10):
-        #         # print(f"Warning \t{str(i)}")
-        #         Warning(f"Warning \t{str(i)}")
-        #
-        # threadList = []
-        # #
-        # for th in range(2):
-        #     tmp = threading.Thread(target=testPrintThread1 if th % 2 else testPrintThread2)
-        #     threadList.append(tmp)
-        #     tmp.start()
-        # #
-        # for th in threadList:
-        #     th.join()
+    def test_local_active_deactivate(self):
+        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.Debug.active()
+        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.Debug.deactivate()
+        self.assertNotIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.Debug.active()
+        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
 
     def test_templates(self):
+        global random_word
+        Debugger.AllActiveInstance = []
+        Debugger.AllSleepInstance = []
+        Debugger.AllUseFileName = {}
 
+        print("*" * 40)
         DEBUG = Debugger(**dDEBUG)
         INFO = Debugger(**dINFO)
         WARNING = Debugger(**dWARNING)
         EXCEPTION = Debugger(**dEXCEPTION)
-
-        printD(DEBUG, "123")
-        printD(INFO, "123")
-        printD(WARNING, "123")
-        printD(EXCEPTION, "123")
+        Debugger.GlobalManager(typePrint=None)
+        printD(DEBUG, random_word())
+        printD(INFO, random_word())
+        printD(WARNING, random_word())
+        printD(EXCEPTION, random_word())
+        print("*" * 40)
 
     def __del__(self):
         try:
@@ -168,9 +146,6 @@ class MyTestCase(unittest.TestCase):
             os.remove("debug1.log")
         except FileNotFoundError:
             pass
-
-    def test_unique(self):
-        ...
 
 
 if __name__ == '__main__':

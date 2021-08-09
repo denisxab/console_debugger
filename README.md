@@ -11,7 +11,11 @@
 
 Можно вручную указать параметры экземпляра
 
-- `Debug_Name = Debugger(title_name: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, active: bool = True, style_text: Optional[dstyle] = None)`
+- `Debug_Name = Debugger(active: bool,,title_name: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None style_text: Optional[dstyle] = None)`
+
+     - `active` = on/off жизни экземпляра, Если `False` экземпляр 
+    будет игнорировать вызов, а также будет добавлен в массив `Debugger.AllCountSleepInstance`.  
+       
     - `title_name` = Уникальное имя экземпляра которое будет отображаться в выводе.  
     
     - `consoleOutput` = on/off отображения в консоль или другие
@@ -20,9 +24,6 @@
     - `fileConfig` = Конфигурация записи в файл, входные параметры такие же как и у стандартной функции `open()`  
         передавать в формате `Dict{"file":"test.log", ... }`. Для удобного формирования параметров можно  
          пользоваться функцией `dopen()`.  
-    
-    - `active` = on/off жизни экземпляра, Если `False` экземпляр 
-    будет равен `lambda *args: None`, а также будет добавлен в массив `Debugger.AllCountSleepInstance`.  
     
     - `style_text` = Стиль отображения текста. Для удобного формирования параметров можно  
         пользоваться функцией `dstyle`.  
@@ -40,8 +41,8 @@
 
 Эта команда влияет на все экземпляры `Debugger`
 
-- `Debugger.GlobalManager(global_disable=False, typePrint: Optional[str] = "grid"):`
-    - `global_disable` = Вы можете отключить все экземпляры разом, они будут равны `lambda *args: None`
+- `Debugger.GlobalManager(global_active=None, typePrint: Optional[str] = "grid"):`
+    - `global_active` = Вы можете on/off все экземпляры разом
     - `typePrint=` = Глобальный стиль отображения данных
         - `"grid"` = Стиль таблица 
         
@@ -54,7 +55,7 @@
         
         - `None` = Без стиля 
         
-        ![](https://i.imgur.com/6BXZOBc.png)
+        ![](https://i.imgur.com/byg84id.png)
 
 ## 3 Использовать в коде
 
@@ -90,7 +91,7 @@ random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range
 ```python
 from debugger import *
 
-Debug = Debugger(title_name="[DEBUG]",
+Debug = Debugger(True,title_name="[DEBUG]",
 
                  fileConfig=dopen(file="debug.log",
                                   mode="a",
@@ -99,7 +100,7 @@ Debug = Debugger(title_name="[DEBUG]",
                  style_text=dstyle(bg_color="bg_blue",
                                    len_word=21)
                  )
-Info = Debugger(title_name="[INFO]",
+Info = Debugger(True,title_name="[INFO]",
 
                 fileConfig={"file": "info.log",
                             "mode": "a", "encoding": "utf-8"},
@@ -107,7 +108,7 @@ Info = Debugger(title_name="[INFO]",
 
                 consoleOutput=False
                 )
-Warning = Debugger("[WARNING]", style_text=dstyle(len_word=25))
+Warning = Debugger(True,"[WARNING]", style_text=dstyle(len_word=25))
 
 Debugger.GlobalManager(typePrint="grid")
 
@@ -144,7 +145,7 @@ from debugger import *
 Debug = Debugger(**dDEBUG)
 Info = Debugger(**dINFO)
 Warning = Debugger(**dWARNING)
-TEST = Debugger("TEST")
+TEST = Debugger(True,"TEST")
 
 Debugger.GlobalManager(typePrint="tk")
 
