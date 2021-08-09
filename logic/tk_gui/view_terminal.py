@@ -1,3 +1,4 @@
+from os.path import dirname
 from tkinter import Tk, scrolledtext, Frame, Button
 from typing import List
 
@@ -6,7 +7,7 @@ class View:
     Arr_textWidget: List[scrolledtext.ScrolledText] = []
 
     def __init__(self, names_console: List[str]):
-        from os.path import dirname
+
         self.windowTk = Tk()
         self.windowTk.title("debugger_tk")
         self.windowTk.iconbitmap(f"{dirname(__file__)}\icons.ico")

@@ -1,8 +1,9 @@
+import os
 import random
 import string
 import unittest
 
-from debugger import *
+from logic.debugger import *
 
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(4, 100)))
@@ -30,15 +31,16 @@ class MyTestCase(unittest.TestCase):
         Debugger.GlobalManager(typePrint="grid")
 
         self.assertEqual(self.Debug.title_name, '[DEBUG]')
-        self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]','TEST_File'])
+        self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
         self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
         self.assertEqual(self.Debug.AllUseFileName,
                          {'C:/Users/denis/PycharmProjects/console_debugger/test/debug.log': 'TEST_File'})
         self.assertEqual(len(self.Debug.AllInstance), 5)
-        self.assertEqual(self.Debug.GlobalLenRows, [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
+        self.assertEqual(self.Debug.GlobalLenRows,
+                         [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
         self.assertEqual(self.Debug.GlobalRowBoard,
                          "+-------------------------+-------------------------+-------------------------------+---------+")
-        self.assertEqual(self.Debug.GlobalTkinterConsole, False)
+        self.assertEqual(self.Debug.GlobalTkinterConsole, True)
         self.assertEqual(self.TEST_File.fileConfig,
                          {'file': 'debug.log', 'mode': 'a', 'buffering': 8192, 'encoding': 'utf-8', 'errors': None,
                           'newline': None, 'closefd': True})
@@ -79,7 +81,7 @@ class MyTestCase(unittest.TestCase):
             printD(self.TEST, random_word())
             printD(self.TEST_File, random_word())
 
-    @unittest.skip("tk")
+    # @unittest.skip("tk")
     def test_GlobalManager_tk(self):
         global random_word
         Debugger.GlobalManager(typePrint="tk")
@@ -98,16 +100,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(Debugger.AllSleepInstance, ['TEST', '[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
         Debugger.GlobalManager(global_active=True)
         self.assertEqual(Debugger.AllSleepInstance, [])
-        self.assertEqual(Debugger.AllActiveInstance, [ '[DEBUG]', '[INFO]', '[WARNING]', 'TEST','TEST_File'])
-
-    def test_StyleText_strip(self):
-        a = " 3132  "
-        a1 = "3132  "
-        a2 = " 3132"
-
-        self.assertEqual(StyleText(a, "").strip(), "3132")
-        self.assertEqual(StyleText(a1, "").strip(), "3132")
-        self.assertEqual(StyleText(a2, "").strip(), "3132")
+        self.assertEqual(Debugger.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
 
     def test_local_active_deactivate(self):
         self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)

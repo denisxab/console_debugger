@@ -89,7 +89,7 @@ random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range
 ```
 
 ```python
-from debugger import *
+from console_debugger import *
 
 Debug = Debugger(True,title_name="[DEBUG]",
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 ## Использовать готовые стили, вызывать `printD`
 
 ```python
-from debugger import *
+from console_debugger import *
 
 Debug = Debugger(**dDEBUG)
 Info = Debugger(**dINFO)
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
 ## Использовать GUI Tkinter
 ```python
-from debugger import *
+from console_debugger import *
 
 
 Debug = Debugger(**dDEBUG)

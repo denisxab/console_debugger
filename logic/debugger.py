@@ -1,3 +1,13 @@
+__all__ = ["dopen",
+           "style_t",
+           "dstyle",
+           "Debugger",
+           "printD",
+           "dDEBUG",
+           "dINFO",
+           "dWARNING",
+           "dEXCEPTION"]
+
 import io
 import os
 import sys
@@ -6,8 +16,8 @@ import time
 from pprint import pformat
 from typing import Union, TextIO, Tuple, Optional, Dict, List
 
-from coloring_text import StyleText, style_t
-from tk_gui import view_terminal
+from .coloring_text import StyleText, style_t
+from .tk_gui import view_terminal
 
 
 def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
@@ -277,15 +287,3 @@ dEXCEPTION = {"active": True,
 
 if __name__ == '__main__':
     ...
-    # Debug = Debugger(title_id="[DEBUG]", style_text=dstyle(len_word=10, height=8))
-    # Info = Debugger(title_id="[INFO]", style_text=dINFO)
-    # Warning = Debugger(title_id="[WARNING]", style_text=dWARNING)
-
-    # dDEBUG.active()
-    # dINFO.active()
-    # Debugger.GlobalManager(typePrint="grid")
-    #
-    # for i in range(2):
-    #     printD(dDEBUG, "qwertyuiopasdfddsDXWqeqewqweqweqwewqdwQ")
-    #     printD(dINFO, "12312")
-    #     printD(dWARNING, "1234")

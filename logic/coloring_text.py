@@ -1,6 +1,6 @@
-import os
-
 __all__ = ["style_t", "cprint", "StyleText"]
+
+import os
 
 from typing import List
 
