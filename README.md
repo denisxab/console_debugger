@@ -46,7 +46,7 @@
     - `typePrint=` = Глобальный стиль отображения данных
         - `"grid"` = Стиль таблица 
         
-        ![](https://i.imgur.com/EwePtfk.png)
+        ![](https://i.imgur.com/Kif40aB.png)
         
         - `"tk"` = Будет открыто **Tkinter** окно и 
         все записи будут направлены в него
