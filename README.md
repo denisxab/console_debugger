@@ -176,7 +176,7 @@ if __name__ == '__main__':
         Debugger.GlobalManager(global_active=False) # Если нет параметров отключаем все экземпляры 
     Windows()
 ```
-В других модуле создаем необходимые экземпляры
+В других модулях создаем необходимые экземпляры
 ```python
 from console_debugger import *
 HotKeyD = Debugger(True, "[HotKey]")
