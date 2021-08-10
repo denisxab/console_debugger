@@ -209,11 +209,14 @@ class Debugger:
             raise FileExistsError("A single instance of a class can write to only one file")
 
     @classmethod
-    def GlobalManager(cls, *, global_active: bool = None, typePrint: Optional[str] = "grid"):
+    def GlobalManager(cls, *, global_active: Optional[bool] = None, typePrint: Optional[str] = "grid"):
 
         if global_active != None:
             if global_active:
+
                 for k, v in cls.AllInstance.items():
+                    v.__active = True
+
                     if k not in cls.AllActiveInstance:
                         cls.AllActiveInstance.append(k)
 
@@ -222,7 +225,11 @@ class Debugger:
                 return None
 
             if not global_active:
+
                 for k, v in cls.AllInstance.items():
+
+                    v.__active = False
+
                     if k not in cls.AllSleepInstance:
                         cls.AllSleepInstance.append(k)
 
