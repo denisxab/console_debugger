@@ -158,6 +158,65 @@ for i in range(10):
     time.sleep(0.3) # Задержка для наглядности поступления сообщений
 ```
 
+### Использование во Flask
+```python
+from console_debugger import *
+from flask import * 
+
+SECRET_KEY = "123_very_hard_password"
+app = Flask(__name__)
+
+cookDeb = Debugger(True, "[Cook]")
+sessionDeb = Debugger(True, "[Session]")
+
+@app.before_first_request
+def deb():
+    # Tkinter будет перезапускаться при каждом обновление сервера
+    Debugger.GlobalManager(typePrint="tk")
+
+@app.route("/login", methods=['POST', 'GET'])
+def login():
+    global data, cookDeb, sessionDeb
+    cook = "no"
+    ses = "no"
+
+    # Получить куки если есть
+    if request.cookies.get("logged"):
+        cook = request.cookies.get("logged")
+
+    # Получить данные из сессии если есть
+    if "SessioN" in session:
+        ses = session.get("SessioN")
+
+    printD(cookDeb, cook)
+    printD(sessionDeb, ses)
+
+    res = make_response(render_template("login.html", cook=cook, session=ses))
+    res.set_cookie(key="logged", value="yes", max_age=3)
+    session["SessioN"] = "yes"
+    return res
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+`"login.html"`
+```html
+<script>
+    document.cookie = "ex=1;";
+    if (!document.cookie) {
+        alert("Этот сайт требует включение cookie");
+    }
+</script>
+Cook: {{ cook }}
+<p></p>
+Session: {{ session }}
+<form action="/login" method="post" class="form-contact">
+    <p><label>Name </label><input type="text" name="username" value="" required/>
+    <p><label>Passwortitled </label><input type="text" name="password" value="" required/>
+    <p><input type="submit" value="Send"/>
+</form>
+```
+
 
 ## Советы
 
