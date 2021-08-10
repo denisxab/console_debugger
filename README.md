@@ -49,9 +49,9 @@
         ![](https://i.imgur.com/Kif40aB.png)
         
         - `"tk"` = Будет открыто **Tkinter** окно и 
-        все записи будут направлены в него
+        все записи экземпляров будут направлены в него
         
-        ![](https://i.imgur.com/OJP19OR.png)
+        ![](https://i.imgur.com/KiRI1MH.png)
         
         - `None` = Без стиля 
         
@@ -155,7 +155,6 @@ for i in range(10):
     printD(Info, random_word())
     printD(Warning, random_word())
     printD(TEST, random_word())
-    time.sleep(0.3) # Задержка для наглядности поступления сообщений
 ```
 
 ### Использование во Flask
