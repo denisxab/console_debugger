@@ -157,7 +157,39 @@ for i in range(10):
     printD(TEST, random_word())
 ```
 
-### Использование во Flask
+## Использование Глобального режима on/off 
+Создать два режима запуска Debug/Release
+![](https://i.imgur.com/guFWf3O.png)
+
+`main.pyw`
+```python
+import sys
+from console_debugger import Debugger
+from app.viwe import Windows # При импорте должны быть созданы все экземпляры
+
+if __name__ == '__main__':
+    for param in set(sys.argv):
+        if param == "--d":
+            Debugger.GlobalManager(typePrint="grid") # Задать глобальный стиль всем экземпляром
+            break
+    else:
+        Debugger.GlobalManager(global_active=False) # Если нет параметров отключаем все экземпляры 
+    Windows()
+```
+В других модуле создаем необходимые экземпляры
+```python
+from console_debugger import *
+HotKeyD = Debugger(True, "[HotKey]")
+PressKeyD = Debugger(True, "[PressKey]")
+InfoD = Debugger(**dINFO)
+ResD = Debugger(True, "[Result]", style_text=dstyle(len_word=25, height=4))
+
+printD(HotKeyD,"Crtl+c")
+```
+
+## Использование во `Flask`
+
+Поместить `Debugger.GlobalManager` в `@app.before_first_request`
 ```python
 from console_debugger import *
 from flask import * 
@@ -165,6 +197,7 @@ from flask import *
 SECRET_KEY = "123_very_hard_password"
 app = Flask(__name__)
 
+ # Экземпляры в глобальной области видимости
 cookDeb = Debugger(True, "[Cook]")
 sessionDeb = Debugger(True, "[Session]")
 
@@ -219,18 +252,18 @@ Session: {{ session }}
 
 ## Советы
 
-### Про интерфейс GUI Tkinter
+### Про режим отображения  `typePrint="tk"`
 - Tkinter запускается в новом потоке
-- Если нажать на заголовок консоли, то она отчистится
+- Если нажать на заголовок консоли, то текстовое поле под ним отчистится
 - Если нажать нижнею кнопку `save geometry` то вы
-сохраните положение окна на следующий запуск
-- Если закрыть окно, то данные будут отправляться в консоль
+сохраните положение окна при следующих запусках
+- Если закрыть окно `Tkinter` , до завершения главного потока, то данные будут отправляться в консоль `typePrint=None"`
 - Рекомендую не использовать режим `typePrint="tk"` если вы разрабатываете программу на самом Tkinter,
 так как могут быть проблемы с путями к файлам. Например не видеть пути к изображениям.
 
 
 ### Про доступную информации об экземпляре `Debugger`
-- public set:
+- public set | get:
     + `consoleOutput` = Вывод в консоль
     + `style_text` = Стиль отображения текста
     + `active()` = Включить дебагер
