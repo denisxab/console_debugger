@@ -13,6 +13,7 @@ import os
 import sys
 import threading
 import time
+from datetime import datetime
 from pprint import pformat
 from typing import Union, TextIO, Tuple, Optional, Dict, List
 
@@ -156,7 +157,8 @@ class Debugger:
                                                        **self.style_text)), end='')
                 # Tkinter если окно закрыто, то перенаправляем вывод в стандартную консоль
                 elif Debugger.GlobalTkinterConsole and view_terminal.View.Arr_textWidget:
-                    view_terminal.View.Arr_textWidget[self.__id].insert("end", f"{textOutput}\n")
+                    view_terminal.View.Arr_textWidget[self.__id].insert("end",
+                                                                        f"[{datetime.now().strftime('%H:%M:%S')}]{textOutput}\n{'_' * 10}\n")
                 # Без стилей
                 else:
                     print(
