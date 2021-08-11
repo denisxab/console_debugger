@@ -3,13 +3,14 @@ import random
 import string
 import unittest
 
-from logic.debugger import *
+from console_debugger.logic.coloring_text import StyleText, cprint
+from ..debugger import *
 
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(4, 100)))
 
 
-class MyTestCase(unittest.TestCase):
+class Test_debugger(unittest.TestCase):
 
     def setUp(self):
         Debugger.AllActiveInstance = []
@@ -34,7 +35,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
         self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
         self.assertEqual(self.Debug.AllUseFileName,
-                         {'C:/Users/denis/PycharmProjects/console_debugger/test/debug.log': 'TEST_File'})
+                         {'C:/Users/denis/PycharmProjects/console_debugger/console_debugger/debug.log': 'TEST_File'})
         self.assertEqual(len(self.Debug.AllInstance), 5)
         self.assertEqual(self.Debug.GlobalLenRows,
                          [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
@@ -57,7 +58,7 @@ class MyTestCase(unittest.TestCase):
 
     def test__str__repr__(self):
         self.assertEqual(str(self.Debug), "'[DEBUG]'")
-        self.assertEqual(len(repr(self.Debug)), 683)
+        self.assertEqual(len(repr(self.Debug)), 695)
 
     # @unittest.skip("grid")
     def test_GlobalManager_grid(self):
@@ -98,9 +99,14 @@ class MyTestCase(unittest.TestCase):
         Debugger.GlobalManager(global_active=False)
         self.assertEqual(Debugger.AllActiveInstance, [])
         self.assertEqual(Debugger.AllSleepInstance, ['TEST', '[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
+        for k, v in Debugger.AllInstance.items():
+            self.assertEqual(v._Debugger__active, False)
+
         Debugger.GlobalManager(global_active=True)
         self.assertEqual(Debugger.AllSleepInstance, [])
         self.assertEqual(Debugger.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
+        for k, v in Debugger.AllInstance.items():
+            self.assertEqual(v._Debugger__active, True)
 
     def test_local_active_deactivate(self):
         self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
@@ -139,6 +145,121 @@ class MyTestCase(unittest.TestCase):
             os.remove("debug1.log")
         except FileNotFoundError:
             pass
+
+
+class Test_coloring_text(unittest.TestCase):
+
+    def test_style_t(self):
+        """
+        1. Выравнивание текста
+        2. Перенос длинных строк на новую строку +
+            2.1 обрезание длинных строк +
+            2.2 проверка не удалять элемент из пустого массива +
+        3. Удлинять короткие слова +
+        4. Применять стили к тексту
+        """
+
+        self.assertEqual(str(StyleText("123", "321")), "321")
+        self.assertEqual(repr(StyleText("123", "321")), "123")
+
+        """
+        1. Выравнивание текста
+        """
+
+        self.assertEqual(list(style_t("123", len_word=10, agl="center").style_text),
+                         [' ', ' ', ' ', ' ', '1', '2', '3', ' ', ' ', ' '])
+
+        self.assertEqual(list(style_t("1234", len_word=10, agl="center").style_text),
+                         [' ', ' ', ' ', '1', '2', '3', '4', ' ', ' ', ' '])
+
+        self.assertEqual(list(style_t("1234", len_word=3, agl="center").style_text),
+                         ['1', '.', '.'])
+
+        """ 
+         2.2 проверка не удалять элемент из пустого массива +
+        """
+        test_pop = style_t("", len_word=10)
+        self.assertEqual(test_pop.style_text, "")
+        self.assertEqual(test_pop.present_text, "")
+
+        list_true = [
+            [
+                ['1', '2', '3', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                ['1', '2', '3', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+
+                ['1', '2', '\n', '3', ' '],
+                ['1', '2', '\n', '3', ' '],
+                ['1', '2', '\n', '3', ' '],
+                ['1', '2', '\n', '3', ' '],
+                ['1', '2', '\n', '3', ' '],
+                ['1', '2', '\n', '3', ' '],
+            ],
+
+            [
+                ['1', '2', '3', '1', '2', '3', '\t', 'g', 'f', '\n', 'g', 'S', 'D', 'F', ' ', ' ', ' ', ' ', ' ', ' '],
+                ['1', '2', '3', '1', '2', '3', '\t', 'g', 'f', '\n', 'g', 'S', 'D', 'F', ' ', ' ', ' ', ' ', ' ', ' '],
+
+                ['1', '2', '\n', '3', '.'],
+                ['1', '2', '\n', '3', '.'],
+
+                ['1', '2', '\n', '3', '\n', '1', '2', '\n', '3', '\t', '\n', 'g', 'f', '\n', 'g', 'S', '\n', 'D', 'F'],
+                ['1', '2', '\n', '3', '\n', '1', '.'],
+
+                ['1', '2', '\n', '3', '\n', '1', '2', '\n', '3', '\t', '\n', 'g', 'f', '\n', 'g', 'S', '\n', 'D', 'F'],
+                ['1', '2', '\n', '3', '\n', '1', '.'],
+            ],
+            [
+                ['1', '2', '3', 'q', 'w', 'd', 'q', 'w', 'd', 'q', '\n', 'w', 'q', 'w', 'd', 'w', 'q', 'd', 'q', 's',
+                 '.'],
+                ['1', '2', '3', 'q', 'w', 'd', 'q', 'w', 'd', 'q', '\n', 'w', 'q', 'w', 'd', 'w', 'q', 'd', 'q', 's',
+                 '.'],
+
+                ['1', '2', '\n', '3', '.'],
+                ['1', '2', '\n', '3', '.'],
+
+                ['1', '2', '\n', '3', 'q', '\n', 'w', 'd', '\n', 'q', 'w', '\n', 'd', 'q', '\n', 'w', 'q', '\n', 'w',
+                 'd', '\n', 'w', 'q', '\n', 'd', 'q', '\n', 's', '.'],
+
+                ['1', '2', '\n', '3', 'q', '\n', 'w', '.'],
+
+                ['1', '2', '\n', '3', 'q', '\n', 'w', 'd', '\n', 'q', 'w', '\n', 'd', 'q', '\n', 'w', 'q', '\n', 'w',
+                 'd', '\n', 'w', 'q', '\n', 'd', 'q', '\n', 's', '.'],
+
+                ['1', '2', '\n', '3', 'q', '\n', 'w', '.'],
+
+            ],
+        ]
+
+        list_test = [
+            "123",
+            "123\n123\tgfgSDF",
+            "123qwdqwdqwqwdwqdqsscqwergtrhtregrWASDFasD123gfgSDF",
+        ]
+
+        """
+        2.1 обрезание длинных строк +
+        3. Удлинять короткие слова +
+        """
+        for true_data, test_set in zip(list_true, list_test):
+            self.assertEqual(list(style_t(test_set, len_word=10).style_text), true_data[0])
+            self.assertEqual(list(style_t(test_set, len_word=10).present_text), true_data[1])
+
+            self.assertEqual(list(style_t(test_set, len_word=2).style_text), true_data[2])
+            self.assertEqual(list(style_t(test_set, len_word=2).present_text), true_data[3])
+
+            self.assertEqual(list(style_t(test_set, len_word=2, height=10).present_text), true_data[4])
+            self.assertEqual(list(style_t(test_set, len_word=2, height=3).present_text), true_data[5])
+
+            self.assertEqual(list(style_t(test_set, len_word=2, height=10).style_text), true_data[6])
+            self.assertEqual(list(style_t(test_set, len_word=2, height=3).style_text), true_data[7])
+
+        """
+        4. Применять стили к тексту
+        """
+        self.assertEqual(style_t("123", color="red", bg_color="bg_blue", attrs=["bold"]).style_text,
+                         '\x1b[1m\x1b[44m\x1b[31m123\x1b[0m')
+
+        cprint("123", color="red", bg_color="bg_blue", attrs=["bold"])
 
 
 if __name__ == '__main__':

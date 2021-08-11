@@ -43,9 +43,6 @@ class StyleText:
     def __str__(self) -> str:
         return self.style_text
 
-    def strip(self, *args, **kwargs):
-        return self.present_text.strip(*args, **kwargs)
-
 
 def style_t(text: str,
             color: str = None,
@@ -128,7 +125,7 @@ def cprint(text, color: str = None,
            flush=False,
            len_word: int = None,
            height=2):
-    print(style_t(text, color, bg_color, attrs, len_word, height), sep=sep, end=end, file=file, flush=flush)
+    print(style_t(text, color, bg_color, attrs, len_word, height).style_text, sep=sep, end=end, file=file, flush=flush)
 
 
 if __name__ == '__main__':

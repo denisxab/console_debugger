@@ -99,23 +99,4 @@ class View:
 
 
 if __name__ == '__main__':
-
-    import random
-    import string
-    from debugger import *
-
-    Debug = Debugger(**dDEBUG)
-    Info = Debugger(**dINFO)
-    Warning = Debugger(**dWARNING)
-    TEST = Debugger("TEST")
-
-    Debugger.GlobalManager(typePrint='tk')
-
-    random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(1, 40)))
-
-    for i in range(5):
-        printD(Debug, random_word())
-        printD(Info, random_word())
-        printD(Warning, random_word())
-        printD(TEST, random_word())
-        time.sleep(0.3)
+    ...

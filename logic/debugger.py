@@ -17,8 +17,8 @@ from datetime import datetime
 from pprint import pformat
 from typing import Union, TextIO, Tuple, Optional, Dict, List
 
+from console_debugger.tk_gui import view_terminal
 from .coloring_text import StyleText, style_t
-from .tk_gui import view_terminal
 
 
 def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
