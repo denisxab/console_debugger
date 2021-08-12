@@ -7,7 +7,7 @@ from console_debugger.logic.coloring_text import StyleText, cprint
 from ..debugger import printD, Debugger, dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen, style_t
 
 # Сгенерировать случайное слово
-random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(4, 100)))
+random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(30, 100)))
 
 
 class Test_debugger(unittest.TestCase):
@@ -61,20 +61,17 @@ class Test_debugger(unittest.TestCase):
 
     def test__str__repr__(self):
         self.assertEqual(str(self.Debug), "'[DEBUG]'")
-        self.assertEqual(len(repr(self.Debug)), 694)
+        self.assertEqual(len(repr(self.Debug)), 693)
 
     # @unittest.skip("grid")
     def test_GlobalManager_grid(self):
         global random_word
         Debugger.GlobalManager(typePrint="grid")
 
-        TEST_NAME1 = "123"
-        TEST_NAME2 = ["123"]
-        TEST_NAME3 = "123"
         for i in range(10):
-            printD(self.Debug, TEST_NAME1, pn=True)
-            printD(self.Info, TEST_NAME3, pn=True)
-            printD(self.Warning, TEST_NAME2, pn=True)
+            printD(self.Debug, random_word())
+            printD(self.Info, random_word())
+            printD(self.Warning, random_word())
             printD(self.TEST, random_word())
             printD(self.TEST_File, random_word())
 
@@ -93,11 +90,18 @@ class Test_debugger(unittest.TestCase):
     def test_GlobalManager_tk(self):
         global random_word
         Debugger.GlobalManager(typePrint="tk")
+
+        test_name1 = "123"
+        TEST_NAME2 = "".join([str(x%10) for x in range(50)])
+        TEST_NAME3 = "123"
+        TEST_NAME4 = random_word()
+
         for i in range(10):
-            printD(self.Debug, random_word())
-            printD(self.Info, random_word())
-            printD(self.Warning, random_word())
-            printD(self.TEST_File, random_word())
+            printD(self.Debug, test_name1)
+            printD(self.Info, TEST_NAME2)
+            printD(self.Warning, TEST_NAME3)
+            printD(self.TEST, random_word())
+            printD(self.TEST_File, TEST_NAME4)
 
     # Проверка off/on всех дебагеров
     def test_GlobalManager(self):

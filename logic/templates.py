@@ -53,14 +53,4 @@ dEXCEPTION = {"active": True,
 
 
 def printD(name_instance: Debugger, text: str, pn=False, *args, **kwargs):
-    if pn:
-        """
-        1. Отображать имя переменной, если у нее есть внешняя ссылка.
-        2. Если данные указывают на один и тот же объект, будут выведены все имена
-        указывающие на эти данные
-        """
-        callers_local_vars = inspect.currentframe().f_back.f_locals.items()
-        res = [var_name for var_name, var_val in callers_local_vars if var_val is text]
-        if res:
-            text = f"[{', '.join(res)}] {text}"
     name_instance(textOutput=text, *args, **kwargs)

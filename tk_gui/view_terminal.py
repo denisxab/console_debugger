@@ -1,6 +1,34 @@
 from os.path import dirname
-from tkinter import Tk, scrolledtext, Frame, Button
+from tkinter import Tk, Frame, Button, scrolledtext, OUTSIDE, Text
 from typing import List
+
+
+# class TextScrollCombo(ttk.Frame):
+#
+#     def __init__(self, root, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # ensure a consistent GUI size
+#         self.grid_propagate(False)
+#         # implement stretchability
+#         self.grid_rowconfigure(0, weight=1)
+#         self.grid_columnconfigure(0, weight=1)
+#         # create a Text widget
+#         self.txt = Text(self)
+#         self.txt.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
+#         style = ttk.Style(root)
+#         style.configure("Vertical.TScrollbar",
+#                         background="#487861",
+#                         troughcolor="#171b22",
+#                         gripcount=0,  # отключает лишнее на полосе прокрутки
+#                         darkcolor="DarkGreen",
+#                         lightcolor="LightGreen",
+#                         bordercolor="#487861",
+#                         arrowcolor="#171b22",
+#                         )
+#         style.theme_use("clam")
+#         scrollb = ttk.Scrollbar(self, command=self.txt.yview, style='Vertical.TScrollbar')
+#         scrollb.grid(row=0, column=1, sticky='nsew')
+#         self.txt['yscrollcommand'] = scrollb.set
 
 
 class View:
@@ -60,33 +88,35 @@ class View:
         :param count_console: Количество созданных консолей
         :return: список с экземплярами консолей
         """
-        ptr_arr_textWidget = []
+        ptr_arr_textWidget: List[scrolledtext.ScrolledText] = []
         index = 0
         count_console = len(names_console)
         # нумерация строк здесь начинается с единицы, а нумерация столбцов – с нуля.
         for index_console, item in enumerate(names_console):
-            txt = scrolledtext.ScrolledText(frameConsole,
-                                            width=80,  # Количество символов по вертикали
-                                            height=20,  # Количество символов по горизонтали
-                                            bg="#171b22",
-                                            fg="#cad0d9"
-                                            )
-            txt['font'] = ('consolas', '12')
+            ButtonLabel = Button(frameConsole, text=item, bg="#0e1117", fg="#cad0d9",
+                                 height=1,
+                                 command=lambda i=index_console: View.clear_console(i))
 
-            txt.place(
-                rely=0.05,
+            ButtonLabel.place(
                 relx=index,
                 relwidth=(1 / count_console),
-                relheight=1)
+                bordermode=OUTSIDE,
+            )
 
-            ButtonLabel = Button(frameConsole, text=item, bg="#0e1117", fg="#cad0d9",
-                                 command=lambda i=index_console: View.clear_console(i))
-            ButtonLabel.place(
-                rely=0,
+            txt = Text(frameConsole,
+                       width=80,  # Количество символов по вертикали
+                       height=20,  # Количество символов по горизонтали
+                       bg="#171b22",
+                       fg="#cad0d9",
+                       font=('consolas', '11'),
+                       )
+
+            txt.place(
+                y=26,
+                relheight=1,
                 relx=index,
                 relwidth=(1 / count_console),
             )
-
             index += 1 / count_console
 
             ptr_arr_textWidget.append(txt)

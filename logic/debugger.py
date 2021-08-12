@@ -8,6 +8,7 @@ __all__ = ["dopen",
            "dWARNING",
            "dEXCEPTION"]
 
+import inspect
 from datetime import datetime
 from os.path import abspath
 from pprint import pformat
@@ -83,10 +84,10 @@ class Debugger:
 
         # style_text
         self.style_text: dstyle = dstyle(len_word=len(self.__title_name)) if not style_text else style_text
-        # id
-        self.__id = len(self.AllActiveInstance) - 1
 
-        Debugger.AllInstance[title_name] = self
+        # id
+        Debugger.AllInstance[title_name] = self  # Это строчка должны быть выше назначения self.__id !
+        self.__id = len(self.AllActiveInstance) - 1
 
     def active(self):
         self.__active = True
@@ -125,10 +126,28 @@ class Debugger:
                 if Debugger.GlobalLenRows:
                     print(self.__designerTable(style_t(textOutput.replace("\t", ""),
                                                        **self.style_text)), end='')
+
                 # Tkinter если окно закрыто, то перенаправляем вывод в стандартную консоль
                 elif Debugger.GlobalTkinterConsole and view_terminal.View.Arr_textWidget:
-                    view_terminal.View.Arr_textWidget[self.__id].insert("end",
-                                                                        f"[{datetime.now().strftime('%H:%M:%S')}]{textOutput}\n{'_' * 10}\n")
+                    """
+                    1. Отображать имя переменной, если у нее есть внешняя ссылка.
+                    2. Если одному и тому же значению присвоено несколько переменных, 
+                    вы будете получить оба этих имени переменных
+                    """
+                    callers_local_vars = inspect.currentframe().f_back.f_back.f_locals.items()
+                    names_var: list = [var_name for var_name, var_val in callers_local_vars if var_val is textOutput]
+                    names_var_str: str = "¦"
+                    if names_var:
+                        names_var_str = f"({', '.join(names_var)})¦"
+
+                    res = "{data}{name_var}\n{textOutput}\n{next_steep}\n".format(
+                        data=datetime.now().strftime('%H:%M:%S'),
+                        name_var=names_var_str,
+                        textOutput=textOutput,
+                        next_steep=f"{'-' * (len(names_var_str) + 7)}¬"
+                    )
+
+                    view_terminal.View.Arr_textWidget[self.__id].insert("end", res)
                 # Без стилей
                 else:
                     print(
