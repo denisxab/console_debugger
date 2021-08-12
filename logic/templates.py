@@ -7,6 +7,7 @@ __all__ = ["dopen",
            "dEXCEPTION",
            ]
 
+import inspect
 import io
 from typing import List
 
@@ -51,5 +52,15 @@ dEXCEPTION = {"active": True,
               "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31, "height": 20})}
 
 
-def printD(name_instance: Debugger, text: str, *args, **kwargs):
+def printD(name_instance: Debugger, text: str, pn=False, *args, **kwargs):
+    if pn:
+        """
+        1. Отображать имя переменной, если у нее есть внешняя ссылка.
+        2. Если данные указывают на один и тот же объект, будут выведены все имена
+        указывающие на эти данные
+        """
+        callers_local_vars = inspect.currentframe().f_back.f_locals.items()
+        res = [var_name for var_name, var_val in callers_local_vars if var_val is text]
+        if res:
+            text = f"[{', '.join(res)}] {text}"
     name_instance(textOutput=text, *args, **kwargs)

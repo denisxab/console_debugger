@@ -67,10 +67,14 @@ class Test_debugger(unittest.TestCase):
     def test_GlobalManager_grid(self):
         global random_word
         Debugger.GlobalManager(typePrint="grid")
+
+        TEST_NAME1 = "123"
+        TEST_NAME2 = ["123"]
+        TEST_NAME3 = "123"
         for i in range(10):
-            printD(self.Debug, random_word())
-            printD(self.Info, random_word())
-            printD(self.Warning, random_word())
+            printD(self.Debug, TEST_NAME1, pn=True)
+            printD(self.Info, TEST_NAME3, pn=True)
+            printD(self.Warning, TEST_NAME2, pn=True)
             printD(self.TEST, random_word())
             printD(self.TEST_File, random_word())
 
