@@ -59,7 +59,7 @@ class View:
 
     def __get_geometer(self) -> str:
         try:
-            with open("config.txt", "r")as f:
+            with open(f"{dirname(__file__)}\config.txt", "r")as f:
                 return f.read()
 
         except FileNotFoundError:
