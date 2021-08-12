@@ -4,7 +4,7 @@ import string
 import unittest
 
 from console_debugger.logic.coloring_text import StyleText, cprint
-from ..debugger import *
+from ..debugger import printD, Debugger, dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen, style_t
 
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(4, 100)))
@@ -13,9 +13,7 @@ random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range
 class Test_debugger(unittest.TestCase):
 
     def setUp(self):
-        Debugger.AllActiveInstance = []
-        Debugger.AllSleepInstance = []
-        Debugger.AllUseFileName = {}
+        Debugger.AllInstance = {}
 
         self.Debug = Debugger(**dDEBUG)
         self.Info = Debugger(**dINFO)
@@ -43,8 +41,13 @@ class Test_debugger(unittest.TestCase):
                          "+-------------------------+-------------------------+-------------------------------+---------+")
         self.assertEqual(self.Debug.GlobalTkinterConsole, True)
         self.assertEqual(self.TEST_File.fileConfig,
-                         {'file': 'debug.log', 'mode': 'a', 'buffering': 8192, 'encoding': 'utf-8', 'errors': None,
-                          'newline': None, 'closefd': True})
+                         {'buffering': 8192,
+                          'closefd': True,
+                          'encoding': 'utf-8',
+                          'errors': None,
+                          'file': 'C:/Users/denis/PycharmProjects/console_debugger/console_debugger/debug.log',
+                          'mode': 'a',
+                          'newline': None})
 
         # Нельзя добавлять дебагеры с одинаковым `title_name`
         with self.assertRaises(NameError):
@@ -58,7 +61,7 @@ class Test_debugger(unittest.TestCase):
 
     def test__str__repr__(self):
         self.assertEqual(str(self.Debug), "'[DEBUG]'")
-        self.assertEqual(len(repr(self.Debug)), 695)
+        self.assertEqual(len(repr(self.Debug)), 694)
 
     # @unittest.skip("grid")
     def test_GlobalManager_grid(self):
@@ -92,35 +95,38 @@ class Test_debugger(unittest.TestCase):
             printD(self.Warning, random_word())
             printD(self.TEST_File, random_word())
 
+    # Проверка off/on всех дебагеров
     def test_GlobalManager(self):
-        # Проверка off/on всех дебагеров
+
         self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
         self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
+
         Debugger.GlobalManager(global_active=False)
-        self.assertEqual(Debugger.AllActiveInstance, [])
-        self.assertEqual(Debugger.AllSleepInstance, ['TEST', '[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
+
+        self.assertEqual(Debugger.AllActiveInstance(), [])
+        self.assertEqual(Debugger.AllSleepInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
         for k, v in Debugger.AllInstance.items():
             self.assertEqual(v._Debugger__active, False)
 
         Debugger.GlobalManager(global_active=True)
-        self.assertEqual(Debugger.AllSleepInstance, [])
-        self.assertEqual(Debugger.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
+
+        self.assertEqual(Debugger.AllSleepInstance(), [])
+        self.assertEqual(Debugger.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
         for k, v in Debugger.AllInstance.items():
             self.assertEqual(v._Debugger__active, True)
 
     def test_local_active_deactivate(self):
-        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance())
         self.Debug.active()
-        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance())
         self.Debug.deactivate()
-        self.assertNotIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.assertNotIn(self.Debug.title_name, Debugger.AllActiveInstance())
         self.Debug.active()
-        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance)
+        self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance())
 
     def test_templates(self):
         global random_word
-        Debugger.AllActiveInstance = []
-        Debugger.AllSleepInstance = []
+        Debugger.AllInstance = {}
         Debugger.AllUseFileName = {}
 
         print("*" * 40)

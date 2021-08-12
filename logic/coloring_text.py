@@ -1,7 +1,6 @@
 __all__ = ["style_t", "cprint", "StyleText"]
 
-import os
-
+from os import getenv
 from typing import List
 
 ATTRIBUTES = {'bold': 1,
@@ -96,7 +95,7 @@ def style_t(text: str,
 
     Style_text = text
 
-    if os.getenv('ANSI_COLORS_DISABLED') is None:
+    if getenv('ANSI_COLORS_DISABLED') is None:
 
         fmt_str = '\033[%dm%s'
 

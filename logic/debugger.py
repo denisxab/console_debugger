@@ -8,48 +8,33 @@ __all__ = ["dopen",
            "dWARNING",
            "dEXCEPTION"]
 
-import io
-import os
-import sys
-import threading
-import time
 from datetime import datetime
+from os.path import abspath
 from pprint import pformat
-from typing import Union, TextIO, Tuple, Optional, Dict, List
+from sys import stdout
+from threading import Thread
+from time import sleep
+from typing import TextIO, Tuple, Optional, Dict, List, Union
 
 from console_debugger.tk_gui import view_terminal
-from .coloring_text import StyleText, style_t
-
-
-def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
-    return {"file": file,
-            "mode": mode,
-            "buffering": buffering if buffering else io.DEFAULT_BUFFER_SIZE,
-            "encoding": encoding,
-            "errors": errors,
-            "newline": newline,
-            "closefd": closefd}
-
-
-def dstyle(color: str = None,
-           bg_color: str = None,
-           attrs: List[str] = None,
-           len_word: int = None,
-           agl=None,
-           height=2):
-    return {"color": color,
-            "bg_color": bg_color,
-            "attrs": attrs,
-            "len_word": len_word,
-            "agl": agl,
-            "height": height}
+from .coloring_text import style_t, StyleText
+from .templates import *
 
 
 class Debugger:
     AllInstance: Dict[str, object] = {}
-    AllActiveInstance: List[str] = []  # Имена активных дебагеров
-    AllSleepInstance: List[str] = []  # Имена остановленных дебагеров
-    AllUseFileName: Dict[str, str] = {}  # Используемые файлы для записи
+
+    # Имена активных дебагеров
+    AllActiveInstance: List[str] = lambda: [v.title_name for v in Debugger.AllInstance.values()
+                                            if v.is_active]
+
+    # Имена остановленных дебагеров
+    AllSleepInstance: List[str] = lambda: [v.title_name for v in Debugger.AllInstance.values()
+                                           if not v.is_active]
+
+    # Используемые файлы для записи
+    AllUseFileName: Dict[str, str] = lambda: {v.fileConfig["file"]: v.title_name for v in Debugger.AllInstance.values()
+                                              if v.fileConfig}
 
     # Для таблицы
     GlobalLenRows: List[Tuple[str, int]] = []
@@ -85,13 +70,8 @@ class Debugger:
 
         # active
         self.__active: bool = active
-        if self.__active:
-            if self.__title_name not in Debugger.AllActiveInstance:
-                Debugger.AllActiveInstance.append(self.__title_name)
-            else:
-                raise NameError("A instance of a class can only have to unique title_name")
-        else:
-            Debugger.AllSleepInstance.append(self.__title_name)
+        if self.__active and self.__title_name in self.AllActiveInstance:
+            raise NameError("A instance of a class can only have to unique title_name")
 
         # fileConfig
         self.__fileConfig: Optional[Dict] = fileConfig
@@ -99,39 +79,30 @@ class Debugger:
             self.__addFileName_in_AllUseFileName(self.__fileConfig["file"])
 
         # consoleOutput
-        self.consoleOutput: Optional[TextIO] = sys.stdout if consoleOutput else None
+        self.consoleOutput: Optional[TextIO] = stdout if consoleOutput else None
 
         # style_text
         self.style_text: dstyle = dstyle(len_word=len(self.__title_name)) if not style_text else style_text
         # id
-        self.__id = len(Debugger.AllActiveInstance) - 1
+        self.__id = len(self.AllActiveInstance) - 1
 
         Debugger.AllInstance[title_name] = self
 
     def active(self):
         self.__active = True
-        if self.__title_name in Debugger.AllSleepInstance:
-            Debugger.AllSleepInstance.remove(self.__title_name)
-
-        if self.__title_name not in Debugger.AllActiveInstance:
-            Debugger.AllActiveInstance.append(self.__title_name)
 
     def deactivate(self):
         self.__active = False
-        if self.__title_name in Debugger.AllActiveInstance:
-            Debugger.AllActiveInstance.remove(self.__title_name)
-
-        if self.__title_name not in Debugger.AllSleepInstance:
-            Debugger.AllSleepInstance.append(self.__title_name)
 
     def __getattribute__(self, item):
         res = {
-            "AllCountActiveInstance": lambda: Debugger.AllActiveInstance.copy(),
-            "AllCountSleepInstance": lambda: Debugger.AllSleepInstance.copy(),
-            "AllUseFileName": lambda: Debugger.AllUseFileName.copy(),
+            "AllActiveInstance": lambda: Debugger.AllActiveInstance(),
+            "AllSleepInstance": lambda: Debugger.AllSleepInstance(),
+            "AllUseFileName": lambda: Debugger.AllUseFileName(),
             "AllInstance": lambda: Debugger.AllInstance.copy(),
             "fileConfig": lambda: self.__dict__["_Debugger__fileConfig"],
-            "title_name": lambda: self.__dict__["_Debugger__title_name"]
+            "title_name": lambda: self.__dict__["_Debugger__title_name"],
+            "is_active": lambda: self.__active,
         }.get(item, None)
         return res() if res else super().__getattribute__(item)
 
@@ -141,7 +112,6 @@ class Debugger:
 
     def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'):
         if self.__active:
-
             if self.__fileConfig:
                 with open(**self.__fileConfig) as f:
                     # Сохранять в файл не стилизованный текст
@@ -167,9 +137,9 @@ class Debugger:
                         sep=sep, end=end)
 
     def __repr__(self) -> str:
-        res = {"AllCountActiveInstance": Debugger.AllActiveInstance,
-               "AllUseFileName": Debugger.AllUseFileName,
-               "AllCountSleepInstance": Debugger.AllSleepInstance}
+        res = {"AllCountActiveInstance": self.AllActiveInstance,
+               "AllUseFileName": self.AllUseFileName,
+               "AllCountSleepInstance": self.AllSleepInstance}
         res.update(self.__dict__)
         return pformat(res, indent=1, width=30, depth=2)
 
@@ -202,39 +172,23 @@ class Debugger:
         Это необходимо для защиты от случайного параллельного доступа к файлам
         :param file_name: Имя файла
         """
-        absFileName = os.path.abspath(file_name).replace("\\", "/")
-        if not Debugger.AllUseFileName.get(absFileName, False):
-            Debugger.AllUseFileName[absFileName] = self.__title_name.strip()
+        absFileName = abspath(file_name).replace("\\", "/")
+        if not self.AllUseFileName.get(absFileName, False):
+            self.__fileConfig["file"] = absFileName
         else:
             raise FileExistsError("A single instance of a class can write to only one file")
 
     @classmethod
     def GlobalManager(cls, *, global_active: Optional[bool] = None, typePrint: Optional[str] = "grid"):
-
         if global_active != None:
             if global_active:
-
                 for k, v in cls.AllInstance.items():
                     v.__active = True
-
-                    if k not in cls.AllActiveInstance:
-                        cls.AllActiveInstance.append(k)
-
-                    if k in cls.AllSleepInstance:
-                        cls.AllSleepInstance.remove(k)
                 return None
 
             if not global_active:
-
                 for k, v in cls.AllInstance.items():
-
                     v.__active = False
-
-                    if k not in cls.AllSleepInstance:
-                        cls.AllSleepInstance.append(k)
-
-                    if k in cls.AllActiveInstance:
-                        cls.AllActiveInstance.remove(k)
                 return None
 
         # Отображать таблицу в консоли
@@ -262,13 +216,13 @@ class Debugger:
         # Отображать в Tkinter
         elif typePrint == "tk":
             cls.GlobalTkinterConsole = True
-            threading.Thread(name='Th_debugger_tkinter',
-                             target=view_terminal.View,
-                             args=(cls.AllActiveInstance,)).start()
+            Thread(name='Th_debugger_tkinter',
+                   target=view_terminal.View,
+                   args=(cls.AllActiveInstance(),)).start()
 
             # Ждать пока окно создаться
             while view_terminal.View.Arr_textWidget == []:
-                time.sleep(0.1)
+                sleep(0.1)
 
             return None
 
@@ -276,23 +230,6 @@ class Debugger:
         cls.GlobalLenRows.clear()
         cls.GlobalRowBoard = ""
 
-
-def printD(name_instance: Debugger, text: str, *args, **kwargs):
-    name_instance(textOutput=text, *args, **kwargs)
-
-
-dDEBUG = {"active": True,
-          "title_name": "[DEBUG]",
-          "style_text": dstyle(**{"len_word": 25, "height": 5})}
-dINFO = {"active": True,
-         "title_name": "[INFO]",
-         "style_text": dstyle(**{"color": "blue", "len_word": 25, "height": 2})}
-dWARNING = {"active": True,
-            "title_name": "[WARNING]",
-            "style_text": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31, "height": 10})}
-dEXCEPTION = {"active": True,
-              "title_name": "[EXCEPTION]",
-              "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31, "height": 20})}
 
 if __name__ == '__main__':
     ...
