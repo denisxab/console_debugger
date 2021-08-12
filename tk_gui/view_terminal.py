@@ -66,7 +66,7 @@ class View:
             return f"{600}x{600}+{self.windowTk.winfo_screenwidth() // 2 - 160}+{self.windowTk.winfo_screenheight() // 2 - 160}"
 
     def __set_geometer(self, is_exit=True):
-        with open("config.txt", "w")as f:
+        with open(f"{dirname(__file__)}\config.txt", "w")as f:
             x = self.windowTk.winfo_x()
             y = self.windowTk.winfo_y()
             w = self.windowTk.winfo_width()
