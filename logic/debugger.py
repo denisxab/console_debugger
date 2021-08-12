@@ -140,13 +140,13 @@ class Debugger:
                     if names_var:
                         names_var_str = f"({', '.join(names_var)})¦"
 
-                    res = "{data}{name_var}\n{textOutput}\n{next_steep}\n".format(
+                    res = "{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
+                        next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
                         data=datetime.now().strftime('%H:%M:%S'),
                         name_var=names_var_str,
                         textOutput=textOutput,
-                        next_steep=f"{'-' * (len(names_var_str) + 7)}¬"
-                    )
 
+                    )
                     view_terminal.View.Arr_textWidget[self.__id].insert("end", res)
                 # Без стилей
                 else:
