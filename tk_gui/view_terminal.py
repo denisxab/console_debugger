@@ -109,6 +109,7 @@ class View:
                        bg="#171b22",
                        fg="#cad0d9",
                        font=('consolas', '11'),
+                       insertbackground="white",
                        )
 
             txt.place(
