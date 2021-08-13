@@ -62,6 +62,7 @@ class Test_debugger(unittest.TestCase):
     def test__str__repr__(self):
         self.assertEqual(str(self.Debug), "'[DEBUG]'")
         self.assertEqual(len(repr(self.Debug)), 693)
+        printD(self.Debug, '1', '2', '3')
 
     # @unittest.skip("grid")
     def test_GlobalManager_grid(self):
@@ -92,15 +93,18 @@ class Test_debugger(unittest.TestCase):
         Debugger.GlobalManager(typePrint="tk")
 
         test_name1 = "123"
-        TEST_NAME2 = "".join([str(x%10) for x in range(50)])
+        TEST_NAME2 = "".join([str(x % 10) for x in range(50)])
         TEST_NAME3 = "123"
         TEST_NAME4 = random_word()
 
         for i in range(10):
             printD(self.Debug, test_name1)
+            printD(self.Debug, '1', '2', '3')
+            printD(self.Debug, {'1', '2'}, ('2',), ['3'], "4")  # обрабатывать любой тип
             printD(self.Info, TEST_NAME2)
             printD(self.Warning, TEST_NAME3)
             printD(self.TEST, random_word())
+
             printD(self.TEST_File, TEST_NAME4)
 
     # Проверка off/on всех дебагеров
