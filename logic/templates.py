@@ -7,7 +7,6 @@ __all__ = ["dopen",
            "dEXCEPTION",
            ]
 
-import inspect
 import io
 from typing import List
 
@@ -53,4 +52,4 @@ dEXCEPTION = {"active": True,
 
 
 def printD(name_instance: Debugger, text: str, pn=False, *args, **kwargs):
-    name_instance(textOutput=text, *args, **kwargs)
+    name_instance(text, *args, **kwargs)

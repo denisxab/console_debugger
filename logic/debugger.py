@@ -144,9 +144,10 @@ class Debugger:
                         next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
                         data=datetime.now().strftime('%H:%M:%S'),
                         name_var=names_var_str,
-                        textOutput=textOutput,
+                        textOutput=f"{textOutput} {' '.join(str(item) for item in args)}",
 
                     )
+
                     view_terminal.View.Arr_textWidget[self.__id].insert("end", res)
                 # Без стилей
                 else:
