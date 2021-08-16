@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 
 class StyleText:
@@ -11,3 +11,6 @@ class StyleText:
 
 class Debugger:
     def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'): ...
+
+    @staticmethod
+    def AllCountActiveInstance() -> List[str]: ...

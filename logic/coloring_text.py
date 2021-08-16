@@ -1,5 +1,6 @@
 __all__ = ["style_t", "cprint", "StyleText"]
 
+from collections import deque
 from os import getenv
 from typing import List
 
@@ -54,19 +55,22 @@ def style_t(text: str,
     if len_word:
         # Выравнивание текста по центру
         if agl == 'center':
+
             if len(text) > len_word:
                 # Если длинна слова больше разрешённой, то и центрировать не нужно, просто обрезаем строку
                 text = f"{text[:len_word - 2]}.."
 
             else:
                 # Если нужно центрировать строку меньше разрешённой длины
-                offset = (len_word - len(text)) % 2
-                text = f"{' ' * (((len_word - len(text)) // 2) + offset)}{text}{' ' * ((len_word - len(text)) // 2)}"
+                text = text.center(len_word, ' ')
 
         else:
+
             # Заполняем динамический массив символами, если достигаем максимума длины то добавляем перенос строки
-            arr_text: List[str] = []
+            arr_text: deque = deque()
+
             for index, sbl in enumerate(text):
+
                 # Если слово достигла максимума по ширине и высоте, то обрезаем его
                 if index + 2 > len_word * height:
                     for _ in range(-index % len_word):
@@ -89,7 +93,8 @@ def style_t(text: str,
             # Если будет пустой массив
             if arr_text:
                 # Убираем первый ненужный перенос строки
-                arr_text.pop(0)
+                arr_text.popleft()
+
             # Конвертируем массив в строку
             text = ''.join(arr_text)
 
@@ -123,8 +128,8 @@ def cprint(text, color: str = None,
            file=None,
            flush=False,
            len_word: int = None,
-           height=2):
-    print(style_t(text, color, bg_color, attrs, len_word, height).style_text, sep=sep, end=end, file=file, flush=flush)
+           ):
+    print(style_t(text, color, bg_color, attrs, len_word).style_text, sep=sep, end=end, file=file, flush=flush)
 
 
 if __name__ == '__main__':

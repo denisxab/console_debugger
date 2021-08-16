@@ -39,16 +39,16 @@ def dstyle(color: str = None,
 
 dDEBUG = {"active": True,
           "title_name": "[DEBUG]",
-          "style_text": dstyle(**{"len_word": 25, "height": 5})}
+          "style_text": dstyle(**{"len_word": 25})}
 dINFO = {"active": True,
          "title_name": "[INFO]",
-         "style_text": dstyle(**{"color": "blue", "len_word": 25, "height": 2})}
+         "style_text": dstyle(**{"color": "blue", "len_word": 25})}
 dWARNING = {"active": True,
             "title_name": "[WARNING]",
-            "style_text": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31, "height": 10})}
+            "style_text": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31})}
 dEXCEPTION = {"active": True,
               "title_name": "[EXCEPTION]",
-              "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31, "height": 20})}
+              "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}
 
 
 def printD(name_instance: Debugger, text: str, pn=False, *args, **kwargs):

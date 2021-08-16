@@ -1,6 +1,11 @@
+import _pickle
+import pickle
+import socket
+from collections import deque
 from os.path import dirname
+from threading import Thread
 from tkinter import Tk, Frame, Button, scrolledtext, OUTSIDE, Text
-from typing import List
+from typing import List, Tuple, Any, Optional
 
 
 # class TextScrollCombo(ttk.Frame):
@@ -31,31 +36,179 @@ from typing import List
 #         self.txt['yscrollcommand'] = scrollb.set
 
 
-class View:
-    Arr_textWidget: List[scrolledtext.ScrolledText] = []
+class SeverMg:
+    InitTitleName = -1
+    Exit = -2
+    Is_ImLive = True
+
+    def __init__(self, Host='localhost', Port=50007):
+        self.View = self._initView()
+        self.View.start()
+
+        self.Host: str = Host
+        self.Port: int = Port
+
+        # Конфигурация сокета, конфигурации должны быть одинаковые между сервером и клиентов
+        self.server_sock: socket.socket = socket.socket(
+            family=socket.AF_INET,
+            type=socket.SOCK_STREAM,
+        )
+
+        # Адрес прослушивания
+        self.server_sock.bind((
+            self.Host,  # Адрес
+            self.Port,  # Порт
+        ))
+
+        # Разрешает сколько количество подключений
+        self.server_sock.listen(1)
+
+        self.main_loop()
+
+    # Ждать нового подключение от клиента
+    def init_connect_to_client(self, port: int) -> Tuple[socket.socket, Any]:
+        user, address = self.server_sock.accept()  # Ждет данные от клиентов, не проходит дальше пока нет данных
+        user.send(f"[True] You connect: Port: {self.Port}\n".encode("utf-8"))  # Отправлять можно только байты
+
+        print(f"{self.Port}:{user.fileno()} ", "[CONNECTED] ", address)
+        return user, address
+
+    # Разорвать соединение с клиентом
+    @staticmethod
+    def disconnect_client(user: socket.socket) -> None:
+        user.send("[EXIT]".encode("utf-8"))
+        user.close()
+
+        print('{} {} {}'.format("*" * 40,
+                                "Disconnect Client",
+                                "*" * 40,
+                                ))
+
+    # Проверить данные, на условие разрыва соединения по инициативе клиента
+    @staticmethod
+    def is_connected(data: str) -> bool:
+        return False if data == "exit" else True
+
+    def main_loop(self) -> None:
+
+        print(self.Port, " Ran SeverMg")
+        user, address = self.init_connect_to_client(self.Port)  # Ждем подключение клиента
+
+        fragment = deque()
+
+        # Проверить то что окно не закрыто
+        while SeverMg.Is_ImLive:
+            if user.fileno() != -1:  # Если сервер не отсоединился от клиента
+                try:
+                    # Раскодировать данные в строку #data.decode("utf-8")  # Раскодировать данные в строку
+                    d = b"\1"
+                    while d != b".":
+                        d = user.recv(1)
+                        if not d:
+                            user.close()  # Закрыть соединение с клиентом
+                            break
+                        fragment.append(d)
+                    else:
+                        id_, data_l = pickle.loads(b"".join(fragment))
+                        # print(f"{self.Port}:{user.fileno()} ", id_, data_l)
+                        ViewTk.QueueSendWidget.append((id_, data_l))
+
+                    fragment.clear()
+
+                except ConnectionResetError:  # Если клиент разорвал соединение
+                    user.close()  # Закрыть соединение с клиентом
+                    print('{} {} {}'.format("*" * 40,
+                                            "Клиент разорвал соединение",
+                                            "*" * 40,
+                                            ))
+
+                except (_pickle.UnpicklingError, EOFError):
+                    user.close()  # Закрыть соединение с клиентом
+                    print(fragment)
+                    print('{} {} {}'.format("$" * 40,
+                                            "Ошибка распаковки",
+                                            "$" * 40,
+                                            ))
+
+                except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
+                    user.close()  # Закрыть соединение с клиентом
+                    print('{} {} {}'.format("$" * 40,
+                                            "Если клиенту невозможно отправить данные",
+                                            "$" * 40,
+                                            ))
+
+            else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
+                print("Ждем")
+                user, address = self.init_connect_to_client(self.Port)
+
+        exit()
+
+    @staticmethod
+    def _initView():
+        return Thread(
+            target=ViewTk,
+            args=(["None"],),
+            daemon=True,
+        )
+
+
+class MainView:
+    ...
+
+
+class ViewTk:
+    QueueSendWidget = deque()
 
     def __init__(self, names_console: List[str]):
+        self.title_name: List[str] = []
 
         self.windowTk = Tk()
         self.windowTk.title("debugger_tk")
-        self.windowTk.iconbitmap(f"{dirname(__file__)}\icons.ico")
+        # self.windowTk.iconbitmap(f"{dirname(__file__)}\icons.ico")
         self.windowTk.attributes("-topmost", True)
         self.windowTk.geometry(self.__get_geometer())
+
+        self.ConstructWidget(names_console)
+
+        self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
+
+        self.CheckUpdateQueue()
+
+        self.windowTk.mainloop()
+
+    def CheckUpdateQueue(self):
+        if ViewTk.QueueSendWidget:
+            id_, data = ViewTk.QueueSendWidget.popleft()
+            if id_ == SeverMg.InitTitleName:
+                if self.title_name != data:
+                    self.title_name = data
+                    self.DeconstructWidget()
+                    self.ConstructWidget(data)
+
+            else:
+                self.Arr_textWidget[id_].insert("end", data)
+
+        self.windowTk.after(100, self.CheckUpdateQueue)
+
+    def ConstructWidget(self, names_console: Optional[List[str]]):
 
         self.frameConsole = Frame(self.windowTk,
                                   width=100,
                                   height=200)
 
-        bt1 = Button(self.windowTk, bg="#171b22", command=lambda: None).pack(fill="x")
+        self.bt1 = Button(self.windowTk,
+                          text="save geometry",
+                          bg="#487861",
+                          command=lambda: self.__set_geometer()
+                          )
+        self.bt1.pack(fill="x")
 
-        View.Arr_textWidget = self._FormHorizonConsole(names_console, self.frameConsole)
-        bt_save_geometry_windows = Button(self.windowTk,
-                                          text="save geometry",
-                                          bg="#487861",
-                                          command=lambda: self.__set_geometer(False)).pack(fill="x")
+        self.Arr_textWidget: List[scrolledtext.ScrolledText] = self._FormHorizonConsole(names_console,
+                                                                                        self.frameConsole)
 
-        self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
-        self.windowTk.mainloop()
+    def DeconstructWidget(self):
+        self.bt1.destroy()
+        self.frameConsole.destroy()
 
     def __get_geometer(self) -> str:
         try:
@@ -65,7 +218,7 @@ class View:
         except FileNotFoundError:
             return f"{600}x{600}+{self.windowTk.winfo_screenwidth() // 2 - 160}+{self.windowTk.winfo_screenheight() // 2 - 160}"
 
-    def __set_geometer(self, is_exit=True):
+    def __set_geometer(self):
         with open(f"{dirname(__file__)}\config.txt", "w")as f:
             x = self.windowTk.winfo_x()
             y = self.windowTk.winfo_y()
@@ -73,12 +226,10 @@ class View:
             h = self.windowTk.winfo_height()
             f.write(f"{w}x{h}+{x}+{y}")
 
-    @classmethod
-    def clear_console(cls, index_console: int):
-        cls.Arr_textWidget[index_console].delete(1.0, "end")
+    def clear_console(self, index_console: int):
+        self.Arr_textWidget[index_console].delete(1.0, "end")
 
-    @staticmethod
-    def _FormHorizonConsole(names_console: List[str],
+    def _FormHorizonConsole(self, names_console: List[str],
                             frameConsole: Frame,
                             ) -> List[scrolledtext.ScrolledText]:
         """
@@ -95,7 +246,7 @@ class View:
         for index_console, item in enumerate(names_console):
             ButtonLabel = Button(frameConsole, text=item, bg="#0e1117", fg="#cad0d9",
                                  height=1,
-                                 command=lambda i=index_console: View.clear_console(i))
+                                 command=lambda i=index_console: self.clear_console(i))
 
             ButtonLabel.place(
                 relx=index,
@@ -125,9 +276,10 @@ class View:
         return ptr_arr_textWidget
 
     def __del(self):
-        View.Arr_textWidget = []
+        SeverMg.Is_ImLive = False
+        self.Arr_textWidget = []
         self.windowTk.destroy()
 
 
 if __name__ == '__main__':
-    ...
+    SeverMg("localhost", 50007)

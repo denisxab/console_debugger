@@ -1,6 +1,7 @@
 import os
 import random
 import string
+import time
 import unittest
 
 from console_debugger.logic.coloring_text import StyleText, cprint
@@ -13,6 +14,7 @@ random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range
 class Test_debugger(unittest.TestCase):
 
     def setUp(self):
+
         Debugger.AllInstance = {}
 
         self.Debug = Debugger(**dDEBUG)
@@ -30,16 +32,16 @@ class Test_debugger(unittest.TestCase):
         Debugger.GlobalManager(typePrint="grid")
 
         self.assertEqual(self.Debug.title_name, '[DEBUG]')
-        self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
-        self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
-        self.assertEqual(self.Debug.AllUseFileName,
+        self.assertEqual(self.Debug.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
+        self.assertEqual(self.Debug.AllSleepInstance(), ['TEST'])
+        self.assertEqual(self.Debug.AllUseFileName(),
                          {'C:/Users/denis/PycharmProjects/console_debugger/console_debugger/debug.log': 'TEST_File'})
         self.assertEqual(len(self.Debug.AllInstance), 5)
         self.assertEqual(self.Debug.GlobalLenRows,
                          [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
         self.assertEqual(self.Debug.GlobalRowBoard,
                          "+-------------------------+-------------------------+-------------------------------+---------+")
-        self.assertEqual(self.Debug.GlobalTkinterConsole, True)
+        # self.assertEqual(self.Debug.is_SendDataToSocket, True)
         self.assertEqual(self.TEST_File.fileConfig,
                          {'buffering': 8192,
                           'closefd': True,
@@ -60,8 +62,8 @@ class Test_debugger(unittest.TestCase):
                                                mode="w"), )
 
     def test__str__repr__(self):
-        self.assertEqual(str(self.Debug), "'[DEBUG]'")
-        self.assertEqual(len(repr(self.Debug)), 693)
+        self.assertEqual(str(self.Debug), "[DEBUG]")
+        self.assertEqual(len(repr(self.Debug)), 673)
         printD(self.Debug, '1', '2', '3')
 
     # @unittest.skip("grid")
@@ -100,18 +102,24 @@ class Test_debugger(unittest.TestCase):
         for i in range(10):
             printD(self.Debug, test_name1)
             printD(self.Debug, '1', '2', '3')
-            printD(self.Debug, {'1', '2'}, ('2',), ['3'], "4")  # обрабатывать любой тип
+            printD(self.Debug, str({'1', '2'}), ('2',), ['3'], "4")  # обрабатывать любой тип
             printD(self.Info, TEST_NAME2)
             printD(self.Warning, TEST_NAME3)
             printD(self.TEST, random_word())
-
             printD(self.TEST_File, TEST_NAME4)
+
+        for i in range(10):
+            printD(self.Debug, i)
+            printD(self.Info, i)
+            printD(self.Warning, i)
+            printD(self.TEST, i)
+            printD(self.TEST_File, i)
 
     # Проверка off/on всех дебагеров
     def test_GlobalManager(self):
 
-        self.assertEqual(self.Debug.AllActiveInstance, ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
-        self.assertEqual(self.Debug.AllSleepInstance, ['TEST'])
+        self.assertEqual(self.Debug.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
+        self.assertEqual(self.Debug.AllSleepInstance(), ['TEST'])
 
         Debugger.GlobalManager(global_active=False)
 
@@ -146,7 +154,9 @@ class Test_debugger(unittest.TestCase):
         INFO = Debugger(**dINFO)
         WARNING = Debugger(**dWARNING)
         EXCEPTION = Debugger(**dEXCEPTION)
+
         Debugger.GlobalManager(typePrint=None)
+
         printD(DEBUG, random_word())
         printD(INFO, random_word())
         printD(WARNING, random_word())
@@ -185,7 +195,7 @@ class Test_coloring_text(unittest.TestCase):
         """
 
         self.assertEqual(list(style_t("123", len_word=10, agl="center").style_text),
-                         [' ', ' ', ' ', ' ', '1', '2', '3', ' ', ' ', ' '])
+                         [' ', ' ', ' ', '1', '2', '3', ' ', ' ', ' ', ' '])
 
         self.assertEqual(list(style_t("1234", len_word=10, agl="center").style_text),
                          [' ', ' ', ' ', '1', '2', '3', '4', ' ', ' ', ' '])
@@ -278,6 +288,35 @@ class Test_coloring_text(unittest.TestCase):
                          '\x1b[1m\x1b[44m\x1b[31m123\x1b[0m')
 
         cprint("123", color="red", bg_color="bg_blue", attrs=["bold"])
+
+
+class TestTh_MgSendSocketData(unittest.TestCase):
+    @unittest.skip("0")
+    def setUp(self):
+        Debugger.AllInstance = {}
+        self.Debug = Debugger(**dDEBUG)
+        self.Info = Debugger(**dINFO)
+
+    @unittest.skip("0")
+    def test_send_port(self):
+        global random_word
+        Debugger.GlobalManager(typePrint="tk")
+
+        for i in range(5):
+            printD(self.Debug, str(i))
+            # time.sleep(1)
+            printD(self.Info, str(i))
+
+        print("end1")
+
+        time.sleep(1)
+
+        for i in range(5):
+            printD(self.Debug, str(i))
+            # time.sleep(0.1)
+            printD(self.Info, str(i))
+
+        print("end2")
 
 
 if __name__ == '__main__':

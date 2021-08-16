@@ -9,40 +9,24 @@ __all__ = ["dopen",
            "dEXCEPTION"]
 
 import inspect
-from datetime import datetime
 from os.path import abspath
 from pprint import pformat
 from sys import stdout
-from threading import Thread
-from time import sleep
 from typing import TextIO, Tuple, Optional, Dict, List, Union
 
-from console_debugger.tk_gui import view_terminal
 from .coloring_text import style_t, StyleText
+from .mg_send_socket import _MgSendSocketData
 from .templates import *
 
 
 class Debugger:
     AllInstance: Dict[str, object] = {}
 
-    # Имена активных дебагеров
-    AllActiveInstance: List[str] = lambda: [v.title_name for v in Debugger.AllInstance.values()
-                                            if v.is_active]
-
-    # Имена остановленных дебагеров
-    AllSleepInstance: List[str] = lambda: [v.title_name for v in Debugger.AllInstance.values()
-                                           if not v.is_active]
-
-    # Используемые файлы для записи
-    AllUseFileName: Dict[str, str] = lambda: {v.fileConfig["file"]: v.title_name for v in Debugger.AllInstance.values()
-                                              if v.fileConfig}
-
-    # Для таблицы
+    # Настройки для таблицы
     GlobalLenRows: List[Tuple[str, int]] = []
     GlobalRowBoard: str = ""
 
-    # Для Tkinter
-    GlobalTkinterConsole: bool = False
+    LiveSocket: Optional[_MgSendSocketData] = None
 
     def __init__(self,
                  active: bool,
@@ -60,10 +44,10 @@ class Debugger:
         public get:
             + title_name = Уникальное имя дебагера
             + fileConfig = Конфигурация для файла
-            + AllCountActiveInstance = Все активные дебагеры
-            + AllCountSleepInstance = Все приостановленный дебагиры
-            + AllUseFileName = Все используемые имена файлов
             + AllInstance = Все экземпляры дебагеров
+            + AllActiveInstance() = Все активные дебагеры
+            + AllSleepInstance() = Все приостановленный дебагиры
+            + AllUseFileName() = Все используемые имена файлов
         """
 
         # title_name
@@ -71,7 +55,7 @@ class Debugger:
 
         # active
         self.__active: bool = active
-        if self.__active and self.__title_name in self.AllActiveInstance:
+        if self.__active and self.__title_name in Debugger.AllActiveInstance():
             raise NameError("A instance of a class can only have to unique title_name")
 
         # fileConfig
@@ -87,31 +71,12 @@ class Debugger:
 
         # id
         Debugger.AllInstance[title_name] = self  # Это строчка должны быть выше назначения self.__id !
-        self.__id = len(self.AllActiveInstance) - 1
-
-    def active(self):
-        self.__active = True
-
-    def deactivate(self):
-        self.__active = False
-
-    def __getattribute__(self, item):
-        res = {
-            "AllActiveInstance": lambda: Debugger.AllActiveInstance(),
-            "AllSleepInstance": lambda: Debugger.AllSleepInstance(),
-            "AllUseFileName": lambda: Debugger.AllUseFileName(),
-            "AllInstance": lambda: Debugger.AllInstance.copy(),
-            "fileConfig": lambda: self.__dict__["_Debugger__fileConfig"],
-            "title_name": lambda: self.__dict__["_Debugger__title_name"],
-            "is_active": lambda: self.__active,
-        }.get(item, None)
-        return res() if res else super().__getattribute__(item)
-
-    def __setattr__(self, key, value):
-        super().__setattr__(key, value)
-        self.__dict__[key] = value
+        self.__id = len(Debugger.AllActiveInstance()) - 1
 
     def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'):
+        """
+        Здесь все логика отправки данных, как вы файл, так и на экран
+        """
         if self.__active:
             if self.__fileConfig:
                 with open(**self.__fileConfig) as f:
@@ -122,57 +87,127 @@ class Debugger:
                         sep=sep, end=end, file=f)
 
             if self.consoleOutput:
-                # Таблица
+                # Вывод в виде Таблицы
                 if Debugger.GlobalLenRows:
                     print(self.__designerTable(style_t(textOutput.replace("\t", ""),
                                                        **self.style_text)), end='')
 
-                # Tkinter если окно закрыто, то перенаправляем вывод в стандартную консоль
-                elif Debugger.GlobalTkinterConsole and view_terminal.View.Arr_textWidget:
+                # Заполняет очередь для вывода в сокет!111
+                elif Debugger.LiveSocket:
                     """
+                    Если сокет закрыт, то перенаправляем вывод в стандартную консоль
+                    """
+
+                    """
+                    # Трассировка переемных 
                     1. Отображать имя переменной, если у нее есть внешняя ссылка.
                     2. Если одному и тому же значению присвоено несколько переменных, 
                     вы будете получить оба этих имени переменных
                     """
                     callers_local_vars = inspect.currentframe().f_back.f_back.f_locals.items()
-                    names_var: list = [var_name for var_name, var_val in callers_local_vars if var_val is textOutput]
-                    names_var_str: str = "¦"
-                    if names_var:
-                        names_var_str = f"({', '.join(names_var)})¦"
+                    names_var: list = [var_name for var_name, var_val in callers_local_vars if
+                                       var_val is textOutput]
 
-                    res = "{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
-                        next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
-                        data=datetime.now().strftime('%H:%M:%S'),
-                        name_var=names_var_str,
-                        textOutput=f"{textOutput} {' '.join(str(item) for item in args)}",
+                    Debugger.LiveSocket.pickle_data_and_send_to_server(self.__id, names_var, textOutput, *args)
 
-                    )
 
-                    view_terminal.View.Arr_textWidget[self.__id].insert("end", res)
                 # Без стилей
                 else:
                     print(
-                        "|{}|\t{}".format(self.__title_name, style_t(textOutput.replace('\t', ''), **self.style_text)),
+                        "|{}|\t{}".format(self.__title_name,
+                                          style_t(f"{textOutput} {' '.join(str(item) for item in args)}",
+                                                  **self.style_text)),
                         *args,
                         sep=sep, end=end)
 
-    def __repr__(self) -> str:
-        res = {"AllCountActiveInstance": self.AllActiveInstance,
-               "AllUseFileName": self.AllUseFileName,
-               "AllCountSleepInstance": self.AllSleepInstance}
-        res.update(self.__dict__)
-        return pformat(res, indent=1, width=30, depth=2)
+    @classmethod
+    def GlobalManager(cls, *, global_active: Optional[bool] = -1, typePrint: Optional[str] = "grid"):
+        """
+        Глобальная настройка всех экземпляров
 
-    def __str__(self) -> str:
-        return repr(self.__title_name)
+        :param: typePrint: Отвечает за стиль вывода данных на экран
+        :param: global_active: Можно on/off все экземпляры разом
+        """
+
+        # Логика on/off всех экземпляров
+        if global_active != -1:
+            cls.__global_active_or_deactivate(global_active)
+
+        # Если нет глобально статуса или, активировались все экземпляры, то обрабатываем логику стилей
+        elif global_active == -1 or global_active:
+            # Отображать таблицу в консоли
+            if typePrint == "grid":
+                rowBoard: str = ""
+                rowWord: str = ""
+                arr: List[str] = []
+                for k, v in Debugger.AllInstance.items():
+                    if v.__active:
+                        v1 = v.style_text.copy()
+                        v1['agl'] = 'center'  # чтобы центрировать только заголовки, а не весь текст
+                        text = style_t(k, **v1).present_text
+                        rowBoard += f"+{'-' * len(text)}"
+                        rowWord += f"|{text}"
+                        arr.append(text)
+                        cls.GlobalLenRows.append((k, len(text)))
+
+                rowWord += "|"
+                rowBoard += "+"
+                row: str = f"{rowBoard}\n{rowWord}\n{rowBoard.replace('-', '=')}"
+                cls.GlobalRowBoard = rowBoard
+                print(row)
+                return None
+            else:
+                cls.GlobalLenRows.clear()
+                cls.GlobalRowBoard = ""
+
+            # Запускам менеджер сокета
+            if typePrint == "tk":
+                Debugger.LiveSocket = _MgSendSocketData(Debugger.AllActiveInstance())
+                return None
+            else:
+                Debugger.LiveSocket = None
+            # else:
+            #     cls.WaitAndCloseSocket()  # Если будет выбран другой стиль вывода, то аккуратно закрываем сокет
+
+    # --- Other method --- #
+    # @staticmethod
+    # def CloseSocket():
+    #     """
+    #     # Немедленно закрыть менеджер сокета
+    #     (Данные `MgSendSocketData.QueueSendPort` из  могут быть потеряны)
+    #     """
+    #     if _MgSendSocketData.Is_ImLive:  # Если сокет живой, то выключаем
+    #         _MgSendSocketData.Is_ImLive = False
+    #
+    # @staticmethod
+    # def WaitAndCloseSocket():
+    #     """
+    #     # Дождаться пока все данные отправиться на сервер, а потом закрыть менеджер сокета
+    #     """
+    #
+    #     Debugger.LiveSocket.client_sock.send(pickle.dumps((-2, []), protocol=3))
+
+    def active(self):
+        """
+        Активировать экземпляр
+        """
+        self.__active = True
+
+    def deactivate(self):
+        """
+        Деактивировать экземпляр
+        """
+        self.__active = False
 
     def __designerTable(self, textOutput: StyleText) -> str:
         """
+        Метод для создания таблицы
+        """
+        """
         Dependencies:
-
-        - Debugger.GlobalLenRows:
-        - self.style_text:
-        - self._title:
+            - Debugger.GlobalLenRows:
+            - self.style_text: Нужно знать размеры ячейки
+            - self._title: Нужно знать заголовок для идентификации
         """
         res_print: str = ""
         for height_item in textOutput.present_text.split('\n'):
@@ -190,65 +225,89 @@ class Debugger:
         """
         Проверяет имя файла со всеми используемыми именами файлов
         Это необходимо для защиты от случайного параллельного доступа к файлам
-        :param file_name: Имя файла
         """
         absFileName = abspath(file_name).replace("\\", "/")
-        if not self.AllUseFileName.get(absFileName, False):
+        if not self.AllUseFileName().get(absFileName, False):
             self.__fileConfig["file"] = absFileName
         else:
             raise FileExistsError("A single instance of a class can write to only one file")
 
     @classmethod
-    def GlobalManager(cls, *, global_active: Optional[bool] = None, typePrint: Optional[str] = "grid"):
-        if global_active != None:
-            if global_active:
-                for k, v in cls.AllInstance.items():
-                    v.__active = True
-                return None
-
-            if not global_active:
-                for k, v in cls.AllInstance.items():
-                    v.__active = False
-                return None
-
-        # Отображать таблицу в консоли
-        if typePrint == "grid":
-            rowBoard: str = ""
-            rowWord: str = ""
-            arr: List[str] = []
-            for k, v in Debugger.AllInstance.items():
-                if v.__active:
-                    v1 = v.style_text.copy()
-                    v1['agl'] = 'center'  # чтобы центрировать только заголовки а не весь текст
-                    text = style_t(k, **v1).present_text
-                    rowBoard += f"+{'-' * len(text)}"
-                    rowWord += f"|{text}"
-                    arr.append(text)
-                    cls.GlobalLenRows.append((k, len(text)))
-
-            rowWord += "|"
-            rowBoard += "+"
-            row: str = f"{rowBoard}\n{rowWord}\n{rowBoard.replace('-', '=')}"
-            cls.GlobalRowBoard = rowBoard
-            print(row)
+    def __global_active_or_deactivate(cls, global_status):
+        if global_status:
+            for k, v in cls.AllInstance.items():
+                v.__active = True
             return None
 
-        # Отображать в Tkinter
-        elif typePrint == "tk":
-            cls.GlobalTkinterConsole = True
-            Thread(name='Th_debugger_tkinter',
-                   target=view_terminal.View,
-                   args=(cls.AllActiveInstance(),)).start()
-
-            # Ждать пока окно создаться
-            while view_terminal.View.Arr_textWidget == []:
-                sleep(0.1)
-
+        if not global_status:
+            for k, v in cls.AllInstance.items():
+                v.__active = False
             return None
 
-        cls.GlobalTkinterConsole = False
-        cls.GlobalLenRows.clear()
-        cls.GlobalRowBoard = ""
+    # --- Attribute ---#
+
+    @staticmethod
+    def AllActiveInstance() -> List[str]:
+        """
+        # Имена активных дебагеров
+        """
+        return [v.title_name for v in Debugger.AllInstance.values()
+                if v.is_active]
+
+    @staticmethod
+    def AllSleepInstance() -> List[str]:
+        """
+        # Имена остановленных дебагеров
+        """
+        return [v.title_name for v in Debugger.AllInstance.values()
+                if not v.is_active]
+
+    @staticmethod
+    def AllUseFileName() -> dict:
+        """
+        # Используемые файлы для записи
+        """
+        return {v.fileConfig["file"]: v.title_name for v in
+                Debugger.AllInstance.values()
+                if v.fileConfig}
+
+    @property
+    def _AllInstance(self) -> Dict[str, object]:
+        """
+        Получить копию всех экземпляр дебагера
+        """
+        return Debugger.AllInstance.copy()
+
+    @property
+    def fileConfig(self) -> Optional[Dict]:
+        """
+        Получить конфигурацию файла
+        """
+        return self.__fileConfig
+
+    @property
+    def title_name(self) -> str:
+        """
+        Получить уникальное имя экземпляра
+        """
+        return self.__title_name
+
+    @property
+    def is_active(self) -> bool:
+        """
+        Проверить активный ли экземпляр
+        """
+        return self.__active
+
+    def __repr__(self) -> str:
+        res = {"AllActiveInstance": Debugger.AllActiveInstance(),
+               "AllUseFileName": Debugger.AllUseFileName(),
+               "AllCountSleepInstance": Debugger.AllSleepInstance()}
+        res.update(self.__dict__)
+        return pformat(res, indent=1, width=30, depth=2)
+
+    def __str__(self) -> str:
+        return self.__title_name
 
 
 if __name__ == '__main__':
