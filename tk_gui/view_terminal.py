@@ -186,9 +186,9 @@ class ViewTk:
                     self.ConstructWidget(data)
 
             else:
-                self.Arr_textWidget[id_].insert("end", data)
+                self.Arr_textWidget[id_].insert("0.1", data)
 
-        self.windowTk.after(100, self.CheckUpdateQueue)
+        self.windowTk.after(30, self.CheckUpdateQueue)
 
     def ConstructWidget(self, names_console: Optional[List[str]]):
 
