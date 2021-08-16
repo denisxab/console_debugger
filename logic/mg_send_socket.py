@@ -15,7 +15,6 @@ class _MgSendSocketData:
     QueueSendPort = deque()
 
     InitTitleName = -1
-    Exit = -2
 
     def __init__(self, init_title_name: List[str], Host='localhost', Port=50007):
 
@@ -92,7 +91,5 @@ class _MgSendSocketData:
         """
         # Метод для сохранения данных в файл, вызывать при критических ошибках с сервером, и полной очередью
         """
-        pass  ##!!!
-
-        # with open(self.FileNameSaveIfServerError, 'a', encoding='utf-8') as f:
-        #     f.write(data_str)
+        with open(self.FileNameSaveIfServerError, 'a', encoding='utf-8') as f:
+            f.write(data_str)

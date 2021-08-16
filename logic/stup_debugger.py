@@ -1,5 +1,7 @@
 from typing import Union, List
 
+InitTitleName = -1
+
 
 class StyleText:
     def __init__(self, present_text: str, style_text: str): ...

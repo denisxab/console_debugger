@@ -291,20 +291,19 @@ class Test_coloring_text(unittest.TestCase):
 
 
 class TestTh_MgSendSocketData(unittest.TestCase):
-    @unittest.skip("0")
+    # @unittest.skip("0")
     def setUp(self):
         Debugger.AllInstance = {}
         self.Debug = Debugger(**dDEBUG)
         self.Info = Debugger(**dINFO)
 
-    @unittest.skip("0")
+    # @unittest.skip("0")
     def test_send_port(self):
         global random_word
         Debugger.GlobalManager(typePrint="tk")
 
         for i in range(5):
             printD(self.Debug, str(i))
-            # time.sleep(1)
             printD(self.Info, str(i))
 
         print("end1")
@@ -313,7 +312,6 @@ class TestTh_MgSendSocketData(unittest.TestCase):
 
         for i in range(5):
             printD(self.Debug, str(i))
-            # time.sleep(0.1)
             printD(self.Info, str(i))
 
         print("end2")

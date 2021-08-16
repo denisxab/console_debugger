@@ -166,26 +166,8 @@ class Debugger:
                 return None
             else:
                 Debugger.LiveSocket = None
-            # else:
-            #     cls.WaitAndCloseSocket()  # Если будет выбран другой стиль вывода, то аккуратно закрываем сокет
 
     # --- Other method --- #
-    # @staticmethod
-    # def CloseSocket():
-    #     """
-    #     # Немедленно закрыть менеджер сокета
-    #     (Данные `MgSendSocketData.QueueSendPort` из  могут быть потеряны)
-    #     """
-    #     if _MgSendSocketData.Is_ImLive:  # Если сокет живой, то выключаем
-    #         _MgSendSocketData.Is_ImLive = False
-    #
-    # @staticmethod
-    # def WaitAndCloseSocket():
-    #     """
-    #     # Дождаться пока все данные отправиться на сервер, а потом закрыть менеджер сокета
-    #     """
-    #
-    #     Debugger.LiveSocket.client_sock.send(pickle.dumps((-2, []), protocol=3))
 
     def active(self):
         """
