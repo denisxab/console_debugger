@@ -1,3 +1,6 @@
+"""
+Графическая оболочка
+"""
 __all__ = ["ViewTk"]
 
 import json
@@ -33,6 +36,9 @@ class ViewTk:
         self.windowTk.attributes("-topmost", True)
         self.windowTk.geometry(self.__get_geometer())
 
+        self.frameConsole: Optional[Frame] = None
+        self.bt1: Optional[Button] = None
+        self.Arr_textWidget: List[Text] = []
         self.ConstructWidget(names_console)
 
         self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
@@ -68,7 +74,7 @@ class ViewTk:
                           )
         self.bt1.pack(fill="x")
 
-        self.Arr_textWidget: List[Text] = self._FormHorizonConsole(names_console, self.frameConsole)
+        self.Arr_textWidget = self._FormHorizonConsole(names_console, self.frameConsole)
 
     def DeconstructWidget(self):
         self.bt1.destroy()
@@ -81,7 +87,12 @@ class ViewTk:
                 return f.read()
 
         except FileNotFoundError:
-            return f"{600}x{600}+{self.windowTk.winfo_screenwidth() // 2 - 160}+{self.windowTk.winfo_screenheight() // 2 - 160}"
+            return "{X}x{Y}+{W}+{H}".format(
+                X=600,
+                Y=600,
+                W=self.windowTk.winfo_screenwidth() // 2 - 160,
+                H=self.windowTk.winfo_screenheight() // 2 - 160,
+            )
 
     def __set_geometer(self):
         with open("{path_}/static/config.txt".format(
