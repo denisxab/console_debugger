@@ -48,8 +48,9 @@
         
         ![](https://i.imgur.com/Kif40aB.png)
         
-        - `"soket"` = Данные будут отправиться по сокету в  Будет создан поток и открыто **Tkinter** окно,
-        все записи экземпляров будут направлены в него. [Советы про tkinter](#про-режим-отображения--typeprinttk)
+        - `"soket"` = Данные будут отправиться по сокету, в графическую оболочку Tkinter. Для этого, только первый раз,
+        нужно запустить локальный сервер, который находиться в `console_debugger/gui/main.cmd`(вы также можете сделать ярлык). 
+        [Советы про tkinter](#про-режим-отображения--typeprinttk)
         
         ![](https://i.imgur.com/KiRI1MH.png)
         
@@ -147,7 +148,7 @@ Info = Debugger(**dINFO)
 Warning = Debugger(**dWARNING)
 TEST = Debugger(True,"TEST")
 
-Debugger.GlobalManager(typePrint="tk")
+Debugger.GlobalManager(typePrint="socket")
 
 
 for i in range(10):
@@ -204,7 +205,7 @@ sessionDeb = Debugger(True, "[Session]")
 @app.before_first_request
 def deb():
     # Tkinter будет перезапускаться при каждом обновление сервера
-    Debugger.GlobalManager(typePrint="tk")
+    Debugger.GlobalManager(typePrint="socket")
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
@@ -252,14 +253,11 @@ Session: {{ session }}
 
 ## Советы
 
-### Про режим отображения  `typePrint="tk"`
-- Tkinter запускается в новом потоке
+### Про режим отображения  `typePrint="soket"`
 - Если нажать на заголовок консоли, то текстовое поле под ним отчистится
 - Если нажать нижнею кнопку `save geometry` то вы
 сохраните положение окна при следующих запусках
 - Если закрыть окно `Tkinter` , до завершения главного потока, то данные будут отправляться в консоль `typePrint=None"`
-- Рекомендую не использовать режим `typePrint="tk"` если вы разрабатываете программу на самом Tkinter,
-так как могут быть проблемы с путями к файлам. Например не видеть пути к изображениям.
 
 
 ### Про доступную информации об экземпляре `Debugger`
