@@ -1,20 +1,35 @@
+__all__ = ["ViewTk"]
+
+import json
 from collections import deque
 from os.path import dirname
-from tkinter import Tk, Frame, Button, scrolledtext, OUTSIDE, Text
-from typing import List, Optional
+from threading import Thread
+from tkinter import Tk, Frame, Button, OUTSIDE, Text
+from typing import List, Optional, Deque
 
-from console_debugger.logic.stup_debugger import InitTitleName
+from .mg_get_socket import SeverMg
 
 
 class ViewTk:
-    QueueSendWidget = deque()
+    QueueSendWidget: Deque[Text] = deque()
 
     def __init__(self, names_console: List[str]):
+
+        self.InitTitleName, HOST, PORT = ViewTk.get_setting_socket()
+
+        Thread(
+            target=SeverMg,
+            args=(ViewTk.QueueSendWidget, HOST, PORT,),
+            daemon=True,
+        ).start()
+
         self.title_name: List[str] = []
 
         self.windowTk = Tk()
         self.windowTk.title("debugger_tk")
-        # self.windowTk.iconbitmap(f"{dirname(__file__)}\icons.ico")
+        self.windowTk.iconbitmap("{path_}/static/icons.ico".format(
+            path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])
+        ))
         self.windowTk.attributes("-topmost", True)
         self.windowTk.geometry(self.__get_geometer())
 
@@ -29,7 +44,7 @@ class ViewTk:
     def CheckUpdateQueue(self):
         if ViewTk.QueueSendWidget:
             id_, data = ViewTk.QueueSendWidget.popleft()
-            if id_ == InitTitleName:
+            if id_ == self.InitTitleName:
                 if self.title_name != data:
                     self.title_name = data
                     self.DeconstructWidget()
@@ -53,8 +68,7 @@ class ViewTk:
                           )
         self.bt1.pack(fill="x")
 
-        self.Arr_textWidget: List[scrolledtext.ScrolledText] = self._FormHorizonConsole(names_console,
-                                                                                        self.frameConsole)
+        self.Arr_textWidget: List[Text] = self._FormHorizonConsole(names_console, self.frameConsole)
 
     def DeconstructWidget(self):
         self.bt1.destroy()
@@ -62,14 +76,16 @@ class ViewTk:
 
     def __get_geometer(self) -> str:
         try:
-            with open(f"{dirname(__file__)}\config.txt", "r")as f:
+            with open("{path_}/static/config.txt".format(
+                    path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])), "r")as f:
                 return f.read()
 
         except FileNotFoundError:
             return f"{600}x{600}+{self.windowTk.winfo_screenwidth() // 2 - 160}+{self.windowTk.winfo_screenheight() // 2 - 160}"
 
     def __set_geometer(self):
-        with open(f"{dirname(__file__)}\config.txt", "w")as f:
+        with open("{path_}/static/config.txt".format(
+                path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])), "w")as f:
             x = self.windowTk.winfo_x()
             y = self.windowTk.winfo_y()
             w = self.windowTk.winfo_width()
@@ -81,7 +97,7 @@ class ViewTk:
 
     def _FormHorizonConsole(self, names_console: List[str],
                             frameConsole: Frame,
-                            ) -> List[scrolledtext.ScrolledText]:
+                            ) -> List[Text]:
         """
         Формирует горизонтально консоли и отображает её
 
@@ -89,14 +105,14 @@ class ViewTk:
         :param count_console: Количество созданных консолей
         :return: список с экземплярами консолей
         """
-        ptr_arr_textWidget: List[scrolledtext.ScrolledText] = []
-        index = 0
-        count_console = len(names_console)
+        ptr_arr_textWidget: List[Text] = []
+        index: int = 0
+        count_console: int = len(names_console)
         # нумерация строк здесь начинается с единицы, а нумерация столбцов – с нуля.
         for index_console, item in enumerate(names_console):
-            ButtonLabel = Button(frameConsole, text=item, bg="#0e1117", fg="#cad0d9",
-                                 height=1,
-                                 command=lambda i=index_console: self.clear_console(i))
+            ButtonLabel: Button = Button(frameConsole, text=item, bg="#0e1117", fg="#cad0d9",
+                                         height=1,
+                                         command=lambda i=index_console: self.clear_console(i))
 
             ButtonLabel.place(
                 relx=index,
@@ -104,14 +120,14 @@ class ViewTk:
                 bordermode=OUTSIDE,
             )
 
-            txt = Text(frameConsole,
-                       width=80,  # Количество символов по вертикали
-                       height=20,  # Количество символов по горизонтали
-                       bg="#171b22",
-                       fg="#cad0d9",
-                       font=('consolas', '11'),
-                       insertbackground="white",
-                       )
+            txt: Text = Text(frameConsole,
+                             width=80,  # Количество символов по вертикали
+                             height=20,  # Количество символов по горизонтали
+                             bg="#171b22",
+                             fg="#cad0d9",
+                             font=('consolas', '11'),
+                             insertbackground="white",
+                             )
 
             txt.place(
                 y=26,
@@ -128,6 +144,18 @@ class ViewTk:
     def __del(self):
         self.Arr_textWidget = []
         self.windowTk.destroy()
+        SeverMg.Is_ImLive = False
+
+    @staticmethod
+    def get_setting_socket():
+        """
+        Получить настройки сокета
+        """
+        dirs = dirname(__file__).replace("\\", "/").split("/")[:-2]
+        dirs.append("setting_socket.json")
+        with open("/".join(dirs), "r") as f:
+            res = json.load(f)
+        return res["InitTitleName"], res["HOST"], res["PORT"]
 
 
 if __name__ == '__main__':

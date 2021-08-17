@@ -1,3 +1,5 @@
 /.idea
 /venv
-/tk_gui/config.txt
+/gui/static/config.txt
+/gui/build_exe/main.build
+/gui/build_exe/main.cmd

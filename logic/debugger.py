@@ -8,15 +8,17 @@ __all__ = ["dopen",
            "dWARNING",
            "dEXCEPTION"]
 
-import inspect
+from inspect import currentframe
 from os.path import abspath
 from pprint import pformat
 from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
 
-from .coloring_text import style_t, StyleText
-from .mg_send_socket import _MgSendSocketData
-from .templates import *
+from console_debugger.helpful.coloring_text import style_t, StyleText
+from console_debugger.helpful.stup_debugger import ServerError
+from console_debugger.helpful.templates import dstyle, dEXCEPTION, dINFO, dDEBUG, dWARNING, \
+    printD, dopen
+from console_debugger.logic.mg_send_socket import _MgSendSocketData
 
 
 class Debugger:
@@ -104,12 +106,11 @@ class Debugger:
                     2. Если одному и тому же значению присвоено несколько переменных, 
                     вы будете получить оба этих имени переменных
                     """
-                    callers_local_vars = inspect.currentframe().f_back.f_back.f_locals.items()
+                    callers_local_vars = currentframe().f_back.f_back.f_locals.items()
                     names_var: list = [var_name for var_name, var_val in callers_local_vars if
                                        var_val is textOutput]
 
                     Debugger.LiveSocket.pickle_data_and_send_to_server(self.__id, names_var, textOutput, *args)
-
 
                 # Без стилей
                 else:
@@ -161,8 +162,12 @@ class Debugger:
                 cls.GlobalRowBoard = ""
 
             # Запускам менеджер сокета
-            if typePrint == "tk":
+            if typePrint == "socket":
+
                 Debugger.LiveSocket = _MgSendSocketData(Debugger.AllActiveInstance())
+                if not Debugger.LiveSocket.Is_ImLive:
+                    Debugger.LiveSocket = None
+                    raise ServerError('Вероятно сервер не запущен')
                 return None
             else:
                 Debugger.LiveSocket = None

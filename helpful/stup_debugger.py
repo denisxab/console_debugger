@@ -1,10 +1,13 @@
 from typing import Union, List
 
-InitTitleName = -1
+
+class ServerError(BaseException):
+    ...
 
 
 class StyleText:
-    def __init__(self, present_text: str, style_text: str): ...
+    def __init__(self, present_text: str, style_text: str):
+        ...
 
     def __repr__(self) -> str: ...
 

@@ -8,7 +8,6 @@ __all__ = ["dopen",
            ]
 
 import io
-from typing import List
 
 from .stup_debugger import *
 

@@ -4,8 +4,8 @@ import string
 import time
 import unittest
 
-from console_debugger.logic.coloring_text import StyleText, cprint
-from ..debugger import printD, Debugger, dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen, style_t
+from console_debugger.helpful.coloring_text import StyleText, cprint
+from console_debugger.logic.debugger import printD, Debugger, dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen, style_t
 
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(30, 100)))
@@ -89,10 +89,10 @@ class Test_debugger(unittest.TestCase):
             printD(self.TEST, random_word())
             printD(self.TEST_File, random_word())
 
-    # @unittest.skip("tk")
-    def test_GlobalManager_tk(self):
+    # @unittest.skip("socket")
+    def test_GlobalManager_socket(self):
         global random_word
-        Debugger.GlobalManager(typePrint="tk")
+        Debugger.GlobalManager(typePrint="socket")
 
         test_name1 = "123"
         TEST_NAME2 = "".join([str(x % 10) for x in range(50)])
@@ -300,7 +300,7 @@ class TestTh_MgSendSocketData(unittest.TestCase):
     # @unittest.skip("0")
     def test_send_port(self):
         global random_word
-        Debugger.GlobalManager(typePrint="tk")
+        Debugger.GlobalManager(typePrint="socket")
 
         for i in range(5):
             printD(self.Debug, str(i))

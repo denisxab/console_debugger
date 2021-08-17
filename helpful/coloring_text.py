@@ -90,7 +90,7 @@ def style_t(text: str,
                 for _ in range(-len(text) % len_word):
                     arr_text.append(" ")
 
-            # Если будет пустой массив
+            # Если будет не пустой массив
             if arr_text:
                 # Убираем первый ненужный перенос строки
                 arr_text.popleft()
