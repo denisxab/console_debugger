@@ -92,7 +92,7 @@ class SeverMg:
                                             ))
 
                 except (UnpicklingError, EOFError):
-                    user.close()  # Закрыть соединение с клиентом
+                    #user.close()  # Закрыть соединение с клиентом
                     print(fragment)
                     print('{} {} {}'.format("$" * 40,
                                             "Ошибка распаковки",

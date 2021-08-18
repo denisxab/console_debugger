@@ -169,7 +169,7 @@ class Debugger:
                     Debugger.LiveSocket = None
 
                     dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
-                    dirs.append("gui")
+                    dirs.append("gui/main.cmd")
                     raise ServerError('Вероятно сервер не запущен\n {}'.format(
                         "/".join(dirs)
                     ))

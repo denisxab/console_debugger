@@ -50,5 +50,5 @@ dEXCEPTION = {"active": True,
               "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}
 
 
-def printD(name_instance: Debugger, text: str, pn=False, *args, **kwargs):
+def printD(name_instance: Debugger, text: str, *args, **kwargs):
     name_instance(text, *args, **kwargs)
