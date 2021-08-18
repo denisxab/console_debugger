@@ -9,7 +9,7 @@ __all__ = ["dopen",
            "dEXCEPTION"]
 
 from inspect import currentframe
-from os.path import abspath
+from os.path import abspath, dirname
 from pprint import pformat
 from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
@@ -167,7 +167,12 @@ class Debugger:
                 Debugger.LiveSocket = _MgSendSocketData(Debugger.AllActiveInstance())
                 if not Debugger.LiveSocket.Is_ImLive:
                     Debugger.LiveSocket = None
-                    raise ServerError('Вероятно сервер не запущен')
+
+                    dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
+                    dirs.append("gui")
+                    raise ServerError('Вероятно сервер не запущен\n {}'.format(
+                        "/".join(dirs)
+                    ))
                 return None
             else:
                 Debugger.LiveSocket = None
