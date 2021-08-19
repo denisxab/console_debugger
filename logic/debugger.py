@@ -28,7 +28,7 @@ class Debugger:
     GlobalLenRows: List[Tuple[str, int]] = []
     GlobalRowBoard: str = ""
 
-    LiveSocket: Optional[_MgSendSocketData] = None
+    Socket_obj: Optional[_MgSendSocketData] = None
 
     def __init__(self,
                  active: bool,
@@ -95,7 +95,7 @@ class Debugger:
                                                        **self.style_text)), end='')
 
                 # Заполняет очередь для вывода в сокет!111
-                elif Debugger.LiveSocket:
+                elif Debugger.Socket_obj:
                     """
                     Если сокет закрыт, то перенаправляем вывод в стандартную консоль
                     """
@@ -110,7 +110,7 @@ class Debugger:
                     names_var: list = [var_name for var_name, var_val in callers_local_vars if
                                        var_val is textOutput]
 
-                    Debugger.LiveSocket.pickle_data_and_send_to_server(self.__id, names_var, textOutput, *args)
+                    Debugger.Socket_obj.pickle_data_and_send_to_server(self.__id, names_var, textOutput, *args)
 
                 # Без стилей
                 else:
@@ -164,18 +164,18 @@ class Debugger:
             # Запускам менеджер сокета
             if typePrint == "socket":
 
-                Debugger.LiveSocket = _MgSendSocketData(Debugger.AllActiveInstance())
-                if not Debugger.LiveSocket.Is_ImLive:
-                    Debugger.LiveSocket = None
+                Debugger.Socket_obj = _MgSendSocketData(Debugger.AllActiveInstance())
+                if not Debugger.Socket_obj.Is_ImLive:
+                    Debugger.Socket_obj = None
 
                     dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
-                    dirs.append("gui/main.cmd")
+                    dirs.append("gui/main.pyw")
                     raise ServerError('Вероятно сервер не запущен\n {}'.format(
                         "/".join(dirs)
                     ))
                 return None
             else:
-                Debugger.LiveSocket = None
+                Debugger.Socket_obj = None
 
     # --- Other method --- #
 

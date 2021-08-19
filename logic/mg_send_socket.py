@@ -4,10 +4,11 @@ import json
 from collections import deque
 from datetime import datetime
 from os.path import dirname
-from pickle import dumps
 from socket import socket, AF_INET, SOCK_STREAM
 from sys import argv
 from typing import List
+
+from date_obj import DataForSocket
 
 
 class _MgSendSocketData:
@@ -16,7 +17,7 @@ class _MgSendSocketData:
     def __init__(self, init_title_name: List[str], *, Host=None, Port=None):
 
         if not Host and not Port:
-            self.InitTitleName, self.Host, self.Port = _MgSendSocketData.get_setting_socket()
+            self.Host, self.Port = _MgSendSocketData.get_setting_socket()
         else:
             self.Port: int = Port
             self.Host: str = Host
@@ -49,7 +50,7 @@ class _MgSendSocketData:
         if names_var:
             names_var_str = f"({', '.join(names_var)})¦"
 
-        res = "{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
+        res: str = "{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
             next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
             data=datetime.now().strftime('%H:%M:%S'),
             name_var=names_var_str,
@@ -57,8 +58,7 @@ class _MgSendSocketData:
         )
 
         try:
-            data = dumps((id_, res), protocol=3)
-            self.client_sock.send(data)  # Отправить данные на сервер
+            self.client_sock.send(DataForSocket.to_data_for_socket_bytes(id_, [res]))  # Отправить данные на сервер
         except BaseException as e:
             print(f"{e} | but data save to\n{self.FileNameSaveIfServerError}")
             self._SaveOutputToFile(res)
@@ -72,12 +72,13 @@ class _MgSendSocketData:
         data = self.client_sock.recv(1024)
 
         # Проверка того что мы подключились именно к нужному серверу
-        if data.decode("utf-8")[:6] != "[True]":
+        if DataForSocket.is_connect_client(data):
+            self.client_sock.send(DataForSocket.to_init_title_name_bytes(init_title_name))
+            print(data.decode("utf-8"))
+
+        else:
             self.Is_ImLive = False
             print(f"ServerError: Сервер отправил не верный ключ подтверждения подключения")
-        else:
-            self.client_sock.send(dumps((self.InitTitleName, init_title_name), protocol=3))
-            print(data.decode("utf-8"))
 
     def _SaveOutputToFile(self, data_str: str):
         """
@@ -95,4 +96,4 @@ class _MgSendSocketData:
         dirs.append("setting_socket.json")
         with open("/".join(dirs), "r") as f:
             res = json.load(f)
-        return res["InitTitleName"], res["HOST"], res["PORT"]
+        return res["HOST"], res["PORT"]
