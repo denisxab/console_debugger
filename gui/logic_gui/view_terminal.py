@@ -15,6 +15,10 @@ from .mg_get_socket import _MgGetSocket
 
 
 class ViewTk:
+    GREEN = "#487861"
+    BG_COLOR = "#171b22"
+    BLOCK_COLOR = "#0e1117"
+    TEXT_COLOR = "#cad0d9"
 
     def __init__(self, names_console: List[str]):
 
@@ -113,7 +117,7 @@ class ViewTk:
 
         self.bt1 = Button(self.windowTk,
                           text="save geometry",
-                          bg="#487861",
+                          bg=ViewTk.GREEN,
                           command=lambda: self.__set_geometer()
                           )
         self.bt1.pack(fill="x")
@@ -198,7 +202,8 @@ class ViewTk:
         # нумерация строк здесь начинается с единицы, а нумерация столбцов – с нуля.
         for index_console, item in enumerate(names_console):
             EntryInput = Entry(frameConsole,
-                               bg="#0e1117", fg="#cad0d9",
+                               bg=ViewTk.BLOCK_COLOR, fg=ViewTk.TEXT_COLOR,
+                               insertbackground=ViewTk.TEXT_COLOR,
 
                                )
 
@@ -216,8 +221,8 @@ class ViewTk:
 
             ButtonExecute: Button = Button(frameConsole,
                                            text=item,
-                                           bg="#0e1117",
-                                           fg="#cad0d9",
+                                           bg=ViewTk.BLOCK_COLOR,
+                                           fg=ViewTk.TEXT_COLOR,
                                            height=1,
                                            command=lambda i=index_console, e=EntryInput: self.__execute_button(None, i,
                                                                                                                e))
@@ -232,10 +237,10 @@ class ViewTk:
             txt: Text = Text(frameConsole,
                              width=80,  # Количество символов по вертикали
                              height=20,  # Количество символов по горизонтали
-                             bg="#171b22",
-                             fg="#cad0d9",
+                             bg=ViewTk.BG_COLOR,
+                             fg=ViewTk.TEXT_COLOR,
                              font=('consolas', '11'),
-                             insertbackground="white",
+                             insertbackground=ViewTk.TEXT_COLOR,
                              )
 
             txt.place(
