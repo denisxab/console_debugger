@@ -78,7 +78,7 @@ class _MgSendSocketData:
 
         else:
             self.Is_ImLive = False
-            print(f"ServerError: Сервер отправил не верный ключ подтверждения подключения")
+            print("ServerError: Сервер отправил не верный ключ подтверждения подключения")
 
     def _SaveOutputToFile(self, data_str: str):
         """
