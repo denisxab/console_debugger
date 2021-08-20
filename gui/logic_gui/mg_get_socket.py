@@ -44,6 +44,8 @@ class _MgGetSocket:
     def UserClose(self):
         self.user.close()
         self.user = None
+        print("Ждем")
+        self.ConnectToClient()
 
     @staticmethod
     def _get_setting_socket():

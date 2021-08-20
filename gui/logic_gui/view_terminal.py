@@ -9,7 +9,7 @@ from pickle import UnpicklingError
 from tkinter import Tk, Frame, Button, OUTSIDE, Text, Entry, messagebox
 from typing import List, Optional
 
-from date_obj import DataForSocket, DataFlag, InitTitleNameFlag
+from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from .mg_get_socket import _MgGetSocket
 
 
@@ -72,6 +72,9 @@ class ViewTk:
                             self.__deconstruct_widget()
                             self.__construct_widget(data_l)
 
+                    elif flag == EndSend:
+                        self.SeverTk.UserClose()
+
                 except ConnectionResetError:  # Если клиент разорвал соединение
                     self.SeverTk.UserClose()  # Закрыть соединение с клиентом
                     print('{} {} {}'.format("*" * 40,
@@ -95,9 +98,7 @@ class ViewTk:
                                             ))
 
             else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
-                print("Ждем")
                 self.SeverTk.UserClose()
-                self.SeverTk.ConnectToClient()
 
         self.windowTk.after(10, self.CheckUpdateQueue)
 

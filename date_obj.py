@@ -1,6 +1,7 @@
 __all__ = ["DataForSocket",
            "DataFlag",
-           "InitTitleNameFlag", ]
+           "InitTitleNameFlag",
+           "EndSend"]
 
 from collections import deque
 from pickle import dumps, loads
@@ -35,13 +36,9 @@ class DataForSocket:
         while d != b".":
             d = user.recv(1)
             if not d:
-                user.close()  # Закрыть соединение с клиентом
-                break
+                return EndSend, 0, [""]
             fragment.append(d)
-        else:
-            return loads(b"".join(fragment))
-
-        return EndSend, 0, [""]
+        return loads(b"".join(fragment))
 
     # CLIENT
     @staticmethod
