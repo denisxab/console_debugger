@@ -1,5 +1,7 @@
 __all__ = ["_MgGetSocket"]
 
+import json
+from os.path import dirname
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 from typing import Optional
@@ -8,11 +10,9 @@ from date_obj import DataForSocket
 
 
 class _MgGetSocket:
-    Is_ImLive = True
 
-    def __init__(self, Host, Port):
-        self.Host: str = Host
-        self.Port: int = Port
+    def __init__(self):
+        self.Host, self.Port = _MgGetSocket._get_setting_socket()
 
         self.user: Optional[socket] = None
         self.address = None
@@ -33,22 +33,31 @@ class _MgGetSocket:
         self.server_sock.listen(1)
 
     # Ждать нового подключение от клиента
-    def connect_to_client(self):
+    def ConnectToClient(self):
         def thread_for_wait_client():
             self.user, self.address = self.server_sock.accept()  # Ждет данные от клиентов, не проходит дальше пока нет данных
-            self.user.send(DataForSocket.true_connect_server())  # Отправлять можно только байты
-
+            DataForSocket.SendTrueConnect(self.user)  # Отправлять можно только байты
             print(f"{self.Port}:{self.user.fileno()} ", "[CONNECTED] ", self.address)
 
         Thread(target=thread_for_wait_client, daemon=True).start()
 
-    def user_close(self):
+    def UserClose(self):
         self.user.close()
         self.user = None
 
-    def __repr__(self)->str:
-        return f"Server:\n {self.Host}:{self.Port}\nConnect:\n {self.user.fileno() if self.user else None}"
+    @staticmethod
+    def _get_setting_socket():
+        """
+        Получить настройки сокета
+        """
+        dirs = dirname(__file__).replace("\\", "/").split("/")[:-2]
+        dirs.append("setting_socket.json")
+        with open("/".join(dirs), "r") as f:
+            res = json.load(f)
+        return res["HOST"], res["PORT"]
 
+    def __repr__(self) -> str:
+        return f"Server:\n {self.Host}:{self.Port}\nConnect:\n {self.user.fileno() if self.user else None}"
 
     # Разорвать соединение с клиентом
     # @staticmethod

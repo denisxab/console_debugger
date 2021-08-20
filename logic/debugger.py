@@ -8,6 +8,7 @@ __all__ = ["dopen",
            "dWARNING",
            "dEXCEPTION"]
 
+from datetime import datetime
 from inspect import currentframe
 from os.path import abspath, dirname
 from pprint import pformat
@@ -22,13 +23,13 @@ from console_debugger.logic.mg_send_socket import _MgSendSocketData
 
 
 class Debugger:
-    AllInstance: Dict[str, object] = {}
-
+    # Все экземпляры дебагеров
+    _all_instance: Dict[str, object] = {}
     # Настройки для таблицы
-    GlobalLenRows: List[Tuple[str, int]] = []
-    GlobalRowBoard: str = ""
-
-    Socket_obj: Optional[_MgSendSocketData] = None
+    _global_len_rows: List[Tuple[str, int]] = []
+    _global_row_board: str = ""
+    # Экземпляр сокета
+    _socket_obj: Optional[_MgSendSocketData] = None
 
     def __init__(self,
                  active: bool,
@@ -72,7 +73,7 @@ class Debugger:
         self.style_text: dstyle = dstyle(len_word=len(self.__title_name)) if not style_text else style_text
 
         # id
-        Debugger.AllInstance[title_name] = self  # Это строчка должны быть выше назначения self.__id !
+        Debugger._all_instance[title_name] = self  # Это строчка должны быть выше назначения self.__id !
         self.__id = len(Debugger.AllActiveInstance()) - 1
 
     def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'):
@@ -90,12 +91,12 @@ class Debugger:
 
             if self.consoleOutput:
                 # Вывод в виде Таблицы
-                if Debugger.GlobalLenRows:
+                if Debugger._global_len_rows:
                     print(self.__designerTable(style_t(textOutput.replace("\t", ""),
                                                        **self.style_text)), end='')
 
-                # Заполняет очередь для вывода в сокет!111
-                elif Debugger.Socket_obj:
+                #
+                elif Debugger._socket_obj:
                     """
                     Если сокет закрыт, то перенаправляем вывод в стандартную консоль
                     """
@@ -109,8 +110,19 @@ class Debugger:
                     callers_local_vars = currentframe().f_back.f_back.f_locals.items()
                     names_var: list = [var_name for var_name, var_val in callers_local_vars if
                                        var_val is textOutput]
+                    names_var_str: str = f"({', '.join(names_var)})¦" if names_var else "¦"
 
-                    Debugger.Socket_obj.pickle_data_and_send_to_server(self.__id, names_var, textOutput, *args)
+                    """
+                    Чтобы данные не копировались каждый раз при передачи в функцию, делаем ссылку на текст
+                    """
+                    res: List[str] = ["{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
+                        next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
+                        data=datetime.now().strftime('%H:%M:%S'),
+                        name_var=names_var_str,
+                        textOutput=f"{textOutput} {' '.join(str(item) for item in args)}",
+                    )]
+
+                    Debugger._socket_obj.PickleDataAndSendToServer(self.__id, res)
 
                 # Без стилей
                 else:
@@ -122,7 +134,7 @@ class Debugger:
                         sep=sep, end=end)
 
     @classmethod
-    def GlobalManager(cls, *, global_active: Optional[bool] = -1, typePrint: Optional[str] = "grid"):
+    def GlobalManager(cls, *, global_status: Optional[bool] = None, typePrint: Optional[str] = "grid"):
         """
         Глобальная настройка всех экземпляров
 
@@ -131,17 +143,25 @@ class Debugger:
         """
 
         # Логика on/off всех экземпляров
-        if global_active != -1:
-            cls.__global_active_or_deactivate(global_active)
+        if global_status is not None:
+            if global_status:
+                for k, v in cls._all_instance.items():
+                    v.__active = True
+                return None
+
+            if not global_status:
+                for k, v in cls._all_instance.items():
+                    v.__active = False
+                return None
 
         # Если нет глобально статуса или, активировались все экземпляры, то обрабатываем логику стилей
-        elif global_active == -1 or global_active:
+        elif global_status is None or global_status:
             # Отображать таблицу в консоли
             if typePrint == "grid":
                 rowBoard: str = ""
                 rowWord: str = ""
                 arr: List[str] = []
-                for k, v in Debugger.AllInstance.items():
+                for k, v in Debugger._all_instance.items():
                     if v.__active:
                         v1 = v.style_text.copy()
                         v1['agl'] = 'center'  # чтобы центрировать только заголовки, а не весь текст
@@ -149,33 +169,35 @@ class Debugger:
                         rowBoard += f"+{'-' * len(text)}"
                         rowWord += f"|{text}"
                         arr.append(text)
-                        cls.GlobalLenRows.append((k, len(text)))
+                        cls._global_len_rows.append((k, len(text)))
 
                 rowWord += "|"
                 rowBoard += "+"
                 row: str = f"{rowBoard}\n{rowWord}\n{rowBoard.replace('-', '=')}"
-                cls.GlobalRowBoard = rowBoard
+                cls._global_row_board = rowBoard
                 print(row)
                 return None
             else:
-                cls.GlobalLenRows.clear()
-                cls.GlobalRowBoard = ""
+                cls._global_len_rows.clear()
+                cls._global_row_board = ""
 
             # Запускам менеджер сокета
             if typePrint == "socket":
 
-                Debugger.Socket_obj = _MgSendSocketData(Debugger.AllActiveInstance())
-                if not Debugger.Socket_obj.Is_ImLive:
-                    Debugger.Socket_obj = None
+                Debugger._socket_obj = _MgSendSocketData()
 
+                if not Debugger._socket_obj.ConnectToServer(Debugger.AllActiveInstance()):
+                    Debugger._socket_obj = None
                     dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
                     dirs.append("gui/main.pyw")
                     raise ServerError('Вероятно сервер не запущен\n {}'.format(
                         "/".join(dirs)
                     ))
+
                 return None
+
             else:
-                Debugger.Socket_obj = None
+                Debugger._socket_obj = None
 
     # --- Other method --- #
 
@@ -204,13 +226,13 @@ class Debugger:
         res_print: str = ""
         for height_item in textOutput.present_text.split('\n'):
             height_item = style_t(height_item, **self.style_text).style_text
-            for item in Debugger.GlobalLenRows:
+            for item in Debugger._global_len_rows:
                 if item[0] == self.__title_name:
                     res_print += f"|{height_item}"
                 else:
                     res_print += f"|{' ' * item[1]}"
             res_print += '|\n'
-        res_print += f"{Debugger.GlobalRowBoard}\n"
+        res_print += f"{Debugger._global_row_board}\n"
         return res_print
 
     def __addFileName_in_AllUseFileName(self, file_name: str):
@@ -224,18 +246,6 @@ class Debugger:
         else:
             raise FileExistsError("A single instance of a class can write to only one file")
 
-    @classmethod
-    def __global_active_or_deactivate(cls, global_status):
-        if global_status:
-            for k, v in cls.AllInstance.items():
-                v.__active = True
-            return None
-
-        if not global_status:
-            for k, v in cls.AllInstance.items():
-                v.__active = False
-            return None
-
     # --- Attribute ---#
 
     @staticmethod
@@ -243,7 +253,7 @@ class Debugger:
         """
         # Имена активных дебагеров
         """
-        return [v.title_name for v in Debugger.AllInstance.values()
+        return [v.title_name for v in Debugger._all_instance.values()
                 if v.is_active]
 
     @staticmethod
@@ -251,7 +261,7 @@ class Debugger:
         """
         # Имена остановленных дебагеров
         """
-        return [v.title_name for v in Debugger.AllInstance.values()
+        return [v.title_name for v in Debugger._all_instance.values()
                 if not v.is_active]
 
     @staticmethod
@@ -260,15 +270,15 @@ class Debugger:
         # Используемые файлы для записи
         """
         return {v.fileConfig["file"]: v.title_name for v in
-                Debugger.AllInstance.values()
+                Debugger._all_instance.values()
                 if v.fileConfig}
 
     @property
-    def _AllInstance(self) -> Dict[str, object]:
+    def AllInstance(self) -> Dict[str, object]:
         """
         Получить копию всех экземпляр дебагера
         """
-        return Debugger.AllInstance.copy()
+        return Debugger._all_instance.copy()
 
     @property
     def fileConfig(self) -> Optional[Dict]:
@@ -291,6 +301,7 @@ class Debugger:
         """
         return self.__active
 
+    # --- Info --- #
     def __repr__(self) -> str:
         res = {"AllActiveInstance": Debugger.AllActiveInstance(),
                "AllUseFileName": Debugger.AllUseFileName(),

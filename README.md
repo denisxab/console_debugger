@@ -41,8 +41,8 @@
 
 Эта команда влияет на все экземпляры `Debugger`
 
-- `Debugger.GlobalManager(global_active=None, typePrint: Optional[str] = "grid"):`
-    - `global_active` = Вы можете on/off все экземпляры разом
+- `Debugger.GlobalManager(global_status=None, typePrint: Optional[str] = "grid"):`
+    - `global_status` = Вы можете on/off все экземпляры разом
     - `typePrint=` = Глобальный стиль отображения данных
         - `"grid"` = Стиль таблица 
         
@@ -176,7 +176,7 @@ if __name__ == '__main__':
             Debugger.GlobalManager(typePrint="grid") # Задать глобальный стиль всем экземпляром
             break
     else:
-        Debugger.GlobalManager(global_active=False) # Если нет параметров отключаем все экземпляры 
+        Debugger.GlobalManager(global_status=False) # Если нет параметров отключаем все экземпляры 
     Windows()
 ```
 В других модулях создаем необходимые экземпляры
@@ -255,6 +255,29 @@ Session: {{ session }}
 
 ## Советы
 
+
+### Вы можете использовать шаблон для комментирования `printD`
+Так как водные параметры функции являются не изменяемыми обметками, 
+то они копируются в функцию `printD`, чтобы н тратить лишении наносекунды
+на эту операцию, вы можете закомментировать все вызовы этой функции.
+ 
+ ```cmd
+\s{4}printD+ 
+#none: printD
+```
+ 
+![Замена](https://i.imgur.com/cmzsU24.png)
+
+А потом раскомментировать
+
+ ```cmd
+#none: printD 
+    printD
+```
+![Замена](https://i.imgur.com/P0nugCD.png)
+
+ 
+
 ### Про режим отображения  `typePrint="socket"`
 - Если нажать на заголовок консоли, то текстовое поле под ним отчистится
 - Если нажать нижнею кнопку `save geometry` то вы
@@ -263,16 +286,16 @@ Session: {{ session }}
 
 
 ### Про доступную информации об экземпляре `Debugger`
-- public set | get:
-    + `consoleOutput` = Вывод в консоль
-    + `style_text` = Стиль отображения текста
+- public set:
+    + `consoleOutput` = Переключить on/off вывод в консоль
+    + `style_text` = Задать другой стиль текста
     + `active()` = Включить дебагер
     + `deactivate()` = Отключить дебагер
-
+    
 - public get:
     + `title_name` = Уникальное имя дебагера
     + `fileConfig` = Конфигурация для файла
-    + `AllCountActiveInstance` = Все активные дебагеры
-    + `AllCountSleepInstance` = Все приостановленный дебагиры
-    + `AllUseFileName` = Все используемые имена файлов
-    + `AllInstance` = Все экземпляры дебагеров
+    + `AllCountActiveInstance()` = Все активные дебагеры
+    + `AllCountSleepInstance()` = Все приостановленный дебагиры
+    + `AllUseFileName()` = Все используемые имена файлов
+    + `AllInstance()` = Все экземпляры дебагеров

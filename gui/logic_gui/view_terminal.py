@@ -3,7 +3,6 @@
 """
 __all__ = ["ViewTk"]
 
-import json
 from collections import deque
 from os.path import dirname
 from pickle import UnpicklingError
@@ -35,21 +34,23 @@ class ViewTk:
         self.frameConsole: Optional[Frame] = None
         self.bt1: Optional[Button] = None
         self.Arr_textWidget: List[Text] = []
-        self.ConstructWidget(names_console)
+        self.__construct_widget(names_console)
 
         self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
 
         # Server
-        HOST, PORT = ViewTk.get_setting_socket()
-        self.SeverTk = _MgGetSocket(HOST, PORT)
+        self.SeverTk = _MgGetSocket()
         print(self.SeverTk.Port, " Ran SeverMg")
-        self.SeverTk.connect_to_client()  # Ждем подключение клиента
+        self.SeverTk.ConnectToClient()  # Ждем подключение клиента
         self.CheckUpdateQueue()
         #################
 
         self.windowTk.mainloop()
 
     def CheckUpdateQueue(self):
+        """
+        Проверять данные из сокета и обновлять внутреннею структуру
+        """
 
         if self.SeverTk.user:
 
@@ -57,31 +58,22 @@ class ViewTk:
 
             if self.SeverTk.user.fileno() != -1:  # Если сервер не отсоединился от клиента
                 try:
-                    # Раскодировать данные в строку #data.decode("utf-8")  # Раскодировать данные в строку
-                    d = b"\1"
-                    while d != b".":
-                        d = self.SeverTk.user.recv(1)
-                        if not d:
-                            self.SeverTk.user.close()  # Закрыть соединение с клиентом
-                            break
-                        fragment.append(d)
-                    else:
-                        flag, id_, data_l = DataForSocket.decode_obj_server(b"".join(fragment))
 
-                        # print(f"{self.SeverTk.Port}:{self.SeverTk.user.fileno()} ", id_, data_l[0])
+                    flag, id_, data_l = DataForSocket.GetDataObj(self.SeverTk.user)
 
-                        if flag == DataFlag:
-                            self.Arr_textWidget[id_].insert("0.1", data_l[0])
+                    print(f"{self.SeverTk.Port}:{self.SeverTk.user.fileno()} ", id_, data_l[0])
 
-                        elif flag == InitTitleNameFlag:
-                            if self.title_name != data_l:
-                                self.title_name = data_l
-                                self.DeconstructWidget()
-                                self.ConstructWidget(data_l)
+                    if flag == DataFlag:
+                        self.Arr_textWidget[id_].insert("0.1", data_l[0])
 
-                    fragment.clear()
+                    elif flag == InitTitleNameFlag:
+                        if self.title_name != data_l:
+                            self.title_name = data_l
+                            self.__deconstruct_widget()
+                            self.__construct_widget(data_l)
+
                 except ConnectionResetError:  # Если клиент разорвал соединение
-                    self.SeverTk.user_close()  # Закрыть соединение с клиентом
+                    self.SeverTk.UserClose()  # Закрыть соединение с клиентом
                     print('{} {} {}'.format("*" * 40,
                                             "Клиент разорвал соединение",
                                             "*" * 40,
@@ -96,7 +88,7 @@ class ViewTk:
                                             ))
 
                 except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
-                    self.SeverTk.user_close()  # Закрыть соединение с клиентом
+                    self.SeverTk.UserClose()  # Закрыть соединение с клиентом
                     print('{} {} {}'.format("$" * 40,
                                             "Если клиенту невозможно отправить данные",
                                             "$" * 40,
@@ -104,12 +96,15 @@ class ViewTk:
 
             else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
                 print("Ждем")
-                self.SeverTk.user_close()
-                self.SeverTk.connect_to_client()
+                self.SeverTk.UserClose()
+                self.SeverTk.ConnectToClient()
 
-        self.windowTk.after(30, self.CheckUpdateQueue)
+        self.windowTk.after(10, self.CheckUpdateQueue)
 
-    def ConstructWidget(self, names_console: Optional[List[str]]):
+    def __construct_widget(self, names_console: Optional[List[str]]):
+        """
+        Создаем и размещаем виджеты
+        """
 
         self.frameConsole = Frame(self.windowTk,
                                   width=100,
@@ -122,17 +117,26 @@ class ViewTk:
                           )
         self.bt1.pack(fill="x")
 
-        self.Arr_textWidget = self._FormHorizonConsole(names_console, self.frameConsole)
+        self.Arr_textWidget = self._form_horizon_console(names_console, self.frameConsole)
 
-    def DeconstructWidget(self):
+    def __deconstruct_widget(self):
+        """
+        Удаляем виджеты
+        """
         self.bt1.destroy()
         self.frameConsole.destroy()
 
     @staticmethod
     def display_info(message: str):
+        """
+        Всплывающее окно
+        """
         messagebox.showinfo("Command", message)
 
     def __get_geometer(self) -> str:
+        """
+        Получить размер окна сохраненный в файле
+        """
         try:
             with open("{path_}/static/config.txt".format(
                     path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])), "r")as f:
@@ -147,6 +151,9 @@ class ViewTk:
             )
 
     def __set_geometer(self):
+        """
+        Записать положение и размер окна в файл
+        """
         with open("{path_}/static/config.txt".format(
                 path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])), "w")as f:
             x = self.windowTk.winfo_x()
@@ -157,15 +164,17 @@ class ViewTk:
 
     def __execute_button(self, event, index_console: int, EntryInput_obj: Entry):
         """
-        # clear = Отчистить консоль
+        Обработчик ввода
 
-        # save <name> <path> = сохранить в файл
+        - clear = Отчистить консоль
+
+        - save <name> <path> = сохранить в файл
             - `name` имя файла
             - `path` путь к папке
 
             save test.txt D:\
 
-        # g info = Показать глобальные настройки
+        - g info = Показать глобальные настройки
         """
 
         command = EntryInput_obj.get().split()
@@ -186,9 +195,9 @@ class ViewTk:
             ViewTk.display_info(f"{repr(self.SeverTk)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
             EntryInput_obj.delete(0, "end")
 
-    def _FormHorizonConsole(self, names_console: List[str],
-                            frameConsole: Frame,
-                            ) -> List[Text]:
+    def _form_horizon_console(self, names_console: List[str],
+                              frameConsole: Frame,
+                              ) -> List[Text]:
         """
         Формирует горизонтально консоли и отображает её
 
@@ -256,20 +265,7 @@ class ViewTk:
         return ptr_arr_textWidget
 
     def __del(self):
-        self.Arr_textWidget = []
         self.windowTk.destroy()
-        _MgGetSocket.Is_ImLive = False
-
-    @staticmethod
-    def get_setting_socket():
-        """
-        Получить настройки сокета
-        """
-        dirs = dirname(__file__).replace("\\", "/").split("/")[:-2]
-        dirs.append("setting_socket.json")
-        with open("/".join(dirs), "r") as f:
-            res = json.load(f)
-        return res["HOST"], res["PORT"]
 
 
 if __name__ == '__main__':

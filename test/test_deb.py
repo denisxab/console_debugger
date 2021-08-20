@@ -15,7 +15,7 @@ class Test_debugger(unittest.TestCase):
 
     def setUp(self):
 
-        Debugger.AllInstance = {}
+        Debugger._all_instance = {}
 
         self.Debug = Debugger(**dDEBUG)
         self.Info = Debugger(**dINFO)
@@ -36,10 +36,10 @@ class Test_debugger(unittest.TestCase):
         self.assertEqual(self.Debug.AllSleepInstance(), ['TEST'])
         self.assertEqual(self.Debug.AllUseFileName(),
                          {'C:/Users/denis/PycharmProjects/console_debugger/console_debugger/debug.log': 'TEST_File'})
-        self.assertEqual(len(self.Debug.AllInstance), 5)
-        self.assertEqual(self.Debug.GlobalLenRows,
+        self.assertEqual(len(self.Debug._all_instance), 5)
+        self.assertEqual(self.Debug._global_len_rows,
                          [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
-        self.assertEqual(self.Debug.GlobalRowBoard,
+        self.assertEqual(self.Debug._global_row_board,
                          "+-------------------------+-------------------------+-------------------------------+---------+")
         # self.assertEqual(self.Debug.is_SendDataToSocket, True)
         self.assertEqual(self.TEST_File.fileConfig,
@@ -121,18 +121,18 @@ class Test_debugger(unittest.TestCase):
         self.assertEqual(self.Debug.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
         self.assertEqual(self.Debug.AllSleepInstance(), ['TEST'])
 
-        Debugger.GlobalManager(global_active=False)
+        Debugger.GlobalManager(global_status=False)
 
         self.assertEqual(Debugger.AllActiveInstance(), [])
         self.assertEqual(Debugger.AllSleepInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
-        for k, v in Debugger.AllInstance.items():
+        for k, v in Debugger._all_instance.items():
             self.assertEqual(v._Debugger__active, False)
 
-        Debugger.GlobalManager(global_active=True)
+        Debugger.GlobalManager(global_status=True)
 
         self.assertEqual(Debugger.AllSleepInstance(), [])
         self.assertEqual(Debugger.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST', 'TEST_File'])
-        for k, v in Debugger.AllInstance.items():
+        for k, v in Debugger._all_instance.items():
             self.assertEqual(v._Debugger__active, True)
 
     def test_local_active_deactivate(self):
@@ -146,7 +146,7 @@ class Test_debugger(unittest.TestCase):
 
     def test_templates(self):
         global random_word
-        Debugger.AllInstance = {}
+        Debugger._all_instance = {}
         Debugger.AllUseFileName = {}
 
         print("*" * 40)
@@ -293,7 +293,7 @@ class Test_coloring_text(unittest.TestCase):
 class TestTh_MgSendSocketData(unittest.TestCase):
     # @unittest.skip("0")
     def setUp(self):
-        Debugger.AllInstance = {}
+        Debugger._all_instance = {}
         self.Debug = Debugger(**dDEBUG)
         self.Info = Debugger(**dINFO)
 
