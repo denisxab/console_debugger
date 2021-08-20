@@ -61,7 +61,7 @@ class ViewTk:
 
                     flag, id_, data_l = DataForSocket.GetDataObj(self.SeverTk.user)
 
-                    print(f"{self.SeverTk.Port}:{self.SeverTk.user.fileno()} ", id_, data_l[0])
+                    # print(f"{self.SeverTk.Port}:{self.SeverTk.user.fileno()} ", id_, data_l[0])
 
                     if flag == DataFlag:
                         self.Arr_textWidget[id_].insert("0.1", data_l[0])

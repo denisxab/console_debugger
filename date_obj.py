@@ -3,18 +3,16 @@ __all__ = ["DataForSocket",
            "InitTitleNameFlag", ]
 
 from collections import deque
-from dataclasses import dataclass
 from pickle import dumps, loads
 from socket import socket
 from typing import List, Tuple
 
 DataFlag: bytes = b'\0'  # Обычные данные
 InitTitleNameFlag: bytes = b'\1'  # Нужно создать консоли
+EndSend: int = -1  # Если данные не удалось распаковать
 MyKey = "TRUE_CONNECT"  # Ключ подтверждения того что мы получились на правильный порт
 
 
-
-@dataclass
 class DataForSocket:
 
     # SERVER
@@ -40,7 +38,10 @@ class DataForSocket:
                 user.close()  # Закрыть соединение с клиентом
                 break
             fragment.append(d)
-        return loads(b"".join(fragment))
+        else:
+            return loads(b"".join(fragment))
+
+        return EndSend, 0, [""]
 
     # CLIENT
     @staticmethod
