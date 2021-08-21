@@ -299,3 +299,14 @@ Session: {{ session }}
     + `AllCountSleepInstance()` = Все приостановленный дебагиры
     + `AllUseFileName()` = Все используемые имена файлов
     + `AllInstance()` = Все экземпляры дебагеров
+
+
+### Установка на Linux
+
+ArchLinux
+```bush
+sudo pacman -S tk
+
+xrdb -load /dev/null  
+xrdb -query 
+```

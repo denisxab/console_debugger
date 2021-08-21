@@ -3,6 +3,7 @@ import random
 import string
 import time
 import unittest
+from os.path import dirname
 
 from console_debugger.helpful.coloring_text import StyleText, cprint
 from console_debugger.logic.debugger import printD, Debugger, dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen, style_t
@@ -10,6 +11,8 @@ from console_debugger.logic.debugger import printD, Debugger, dINFO, dWARNING, d
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(30, 100)))
 
+
+PATH_TEST = "/".join(dirname(__file__).replace("\\", "/").split("/"))
 
 class Test_debugger(unittest.TestCase):
 
@@ -35,7 +38,7 @@ class Test_debugger(unittest.TestCase):
         self.assertEqual(self.Debug.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
         self.assertEqual(self.Debug.AllSleepInstance(), ['TEST'])
         self.assertEqual(self.Debug.AllUseFileName(),
-                         {'C:/Users/denis/PycharmProjects/console_debugger/console_debugger/debug.log': 'TEST_File'})
+                         {f'{PATH_TEST}/debug.log': 'TEST_File'})
         self.assertEqual(len(self.Debug._all_instance), 5)
         self.assertEqual(self.Debug._global_len_rows,
                          [('[DEBUG]', 25), ('[INFO]', 25), ('[WARNING]', 31), ('TEST_File', 9)])
@@ -47,7 +50,7 @@ class Test_debugger(unittest.TestCase):
                           'closefd': True,
                           'encoding': 'utf-8',
                           'errors': None,
-                          'file': 'C:/Users/denis/PycharmProjects/console_debugger/console_debugger/debug.log',
+                          'file': f'{PATH_TEST}/debug.log',
                           'mode': 'a',
                           'newline': None})
 
@@ -63,7 +66,9 @@ class Test_debugger(unittest.TestCase):
 
     def test__str__repr__(self):
         self.assertEqual(str(self.Debug), "[DEBUG]")
-        self.assertEqual(len(repr(self.Debug)), 673)
+        
+        
+        self.assertEqual(len(repr(self.Debug)), 675)
         printD(self.Debug, '1', '2', '3')
 
     # @unittest.skip("grid")

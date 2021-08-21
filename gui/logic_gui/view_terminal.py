@@ -3,10 +3,11 @@
 """
 __all__ = ["ViewTk"]
 
+import os
 from collections import deque
 from os.path import dirname
 from pickle import UnpicklingError
-from tkinter import Tk, Frame, Button, OUTSIDE, Text, Entry, messagebox
+from tkinter import Tk, Frame, Button, OUTSIDE, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
 
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
@@ -25,9 +26,13 @@ class ViewTk:
 
         self.windowTk = Tk()
         self.windowTk.title("debugger_tk")
-        self.windowTk.iconbitmap("{path_}/static/icons.ico".format(
+
+        img = PhotoImage("{path_}/static/icons.ico".format(
             path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])
         ))
+
+        # self.windowTk.iconbitmap(img)
+        self.windowTk.tk.call('wm', 'iconphoto', self.windowTk._w, img)
         self.windowTk.attributes("-topmost", True)
         self.windowTk.geometry(self.__get_geometer())
 
