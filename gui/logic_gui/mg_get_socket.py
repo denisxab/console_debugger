@@ -44,7 +44,7 @@ class _MgGetSocket:
     def UserClose(self):
         self.user.close()
         self.user = None
-        print("Ждем")
+        # print("Ждем")
         self.ConnectToClient()
 
     @staticmethod
