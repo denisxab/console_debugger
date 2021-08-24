@@ -17,6 +17,7 @@ class ViewTk:
 	BG_COLOR = "#171b22"
 	BLOCK_COLOR = "#0e1117"
 	TEXT_COLOR = "#cad0d9"
+	SIZE_TEXT_CONSOLE = 7
 
 	def __init__(self, names_console: List[str]):
 
@@ -201,7 +202,7 @@ class ViewTk:
 			EntryInput_obj.delete(0, "end")
 
 	def _form_horizon_console(self, names_console: List[str],
-	                          frameConsole: Frame,
+	                          frameConsoles: Frame,
 	                          ) -> List[Text]:
 		"""
 		Формирует горизонтально консоли и отображает её
@@ -214,59 +215,50 @@ class ViewTk:
 		index: int = 0
 		count_console: int = len(names_console)
 		# нумерация строк здесь начинается с единицы, а нумерация столбцов – с нуля.
+
 		for index_console, item in enumerate(names_console):
-			EntryInput = Entry(frameConsole,
+			Cons = Frame(frameConsoles)
+			EntryInput = Entry(Cons,
+			                   font=('consolas', f'{ViewTk.SIZE_TEXT_CONSOLE}'),
 			                   bg=ViewTk.BLOCK_COLOR, fg=ViewTk.TEXT_COLOR,
-			                   insertbackground=ViewTk.TEXT_COLOR,
-
-			                   )
-
-			EntryInput.bind('<Return>', lambda v, i=index_console, e=EntryInput: self.__execute_button(None, i, e))
-
-			EntryInput.insert(0, "clear")
-
-			EntryInput.place(
-				relx=index,
-
-				relwidth=(1 / count_console),
-
-				bordermode=OUTSIDE,
-			)
-
-			ButtonExecute: Button = Button(frameConsole,
+			                   insertbackground=ViewTk.TEXT_COLOR, )
+			###############
+			ButtonExecute: Button = Button(Cons,
 			                               text=item,
 			                               bg=ViewTk.BLOCK_COLOR,
 			                               fg=ViewTk.TEXT_COLOR,
 			                               height=1,
+			                               font=('consolas', f'{ViewTk.SIZE_TEXT_CONSOLE}'),
 			                               command=lambda i=index_console, e=EntryInput: self.__execute_button(None, i,
 			                                                                                                   e))
-
-			ButtonExecute.place(
-				y=20,
-				relx=index,
-				relwidth=(1 / count_console),
-				bordermode=OUTSIDE,
-			)
-
-			txt: Text = Text(frameConsole,
+			###############
+			txt: Text = Text(Cons,
 			                 width=80,  # Количество символов по вертикали
 			                 height=20,  # Количество символов по горизонтали
 			                 bg=ViewTk.BG_COLOR,
 			                 fg=ViewTk.TEXT_COLOR,
-			                 font=('consolas', '5'),
+			                 font=('consolas', f'{ViewTk.SIZE_TEXT_CONSOLE}'),
 			                 insertbackground=ViewTk.TEXT_COLOR,
 			                 )
+			###############
+			EntryInput.bind('<Return>', lambda v, i=index_console, e=EntryInput: self.__execute_button(None, i, e))
+			EntryInput.insert(0, "clear")
+			###############
 
-			txt.place(
-				y=46,
-				relheight=1,
-				relx=index,
-				relwidth=(1 / count_console),
-			)
+			ButtonExecute.pack(fill="both", )
+			txt.pack(expand=True, fill="both", )
+			EntryInput.pack(fill="both", )
+
+			Cons.place(relheight=1,
+			           relx=index,
+			           relwidth=(1 / count_console),
+			           )
+
 			index += 1 / count_console
-
 			ptr_arr_textWidget.append(txt)
-			frameConsole.pack(fill="both", expand=True)
+
+		###############
+		frameConsoles.pack(expand=True, fill="both", )
 		return ptr_arr_textWidget
 
 	def __del(self):
