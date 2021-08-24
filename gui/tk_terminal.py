@@ -5,8 +5,9 @@ __all__ = ["ViewTk"]
 
 from collections import deque
 from pickle import UnpicklingError
-from tkinter import Tk, Frame, Button, OUTSIDE, Text, Entry, messagebox, PhotoImage
+from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
+
 from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket

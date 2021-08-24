@@ -10,15 +10,16 @@ __all__ = ["dopen",
 
 from datetime import datetime
 from inspect import currentframe
-from os.path import abspath, dirname
+from os.path import abspath
 from pprint import pformat
 from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
+
 from __init__ import *
 from helpful.coloring_text import style_t, StyleText
 from helpful.stup_debugger import ServerError
 from helpful.templates import *
-from logic.mg_send_socket import _MgSendSocketData
+from logic.mg_send_socket import _MgSendSocket
 
 
 class Debugger:
@@ -28,7 +29,7 @@ class Debugger:
 	_global_len_rows: List[Tuple[str, int]] = []
 	_global_row_board: str = ""
 	# Экземпляр сокета
-	_socket_obj: Optional[_MgSendSocketData] = None
+	_socket_obj: Optional[_MgSendSocket] = None
 
 	def __init__(self,
 	             active: bool,
@@ -183,7 +184,7 @@ class Debugger:
 			# Запускам менеджер сокета
 			if typePrint == "socket":
 
-				Debugger._socket_obj = _MgSendSocketData()
+				Debugger._socket_obj = _MgSendSocket()
 
 				if not Debugger._socket_obj.ConnectToServer(Debugger.AllActiveInstance()):
 					Debugger._socket_obj = None

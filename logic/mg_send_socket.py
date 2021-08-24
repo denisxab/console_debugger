@@ -1,21 +1,20 @@
-__all__ = ["_MgSendSocketData"]
+__all__ = ["_MgSendSocket"]
 
 import json
 from datetime import datetime
 from os.path import dirname
 from socket import socket, AF_INET, SOCK_STREAM
-from sys import argv, path
+from sys import argv
 from typing import List
-
 
 from date_obj import DataForSocket
 from helpful import ServerError
 
 
-class _MgSendSocketData:
+class _MgSendSocket:
 
 	def __init__(self):
-		self.Host, self.Port = _MgSendSocketData._get_setting_socket()
+		self.Host, self.Port = _MgSendSocket._get_setting_socket()
 
 		# Имя файла для записи данных на случай если возникнет критическая ошибка с сервером, а очередь полная
 		self.FileNameSaveIfServerError: str = "{path_f}/save_file_name{name_f}.txt".format(

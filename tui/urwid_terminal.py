@@ -6,8 +6,8 @@ from pickle import UnpicklingError
 from typing import List, Optional
 
 import urwid
-from __init__ import *
 
+from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket
 
@@ -77,6 +77,11 @@ class ConsoleFrame(urwid.Frame):
 			except (FileNotFoundError, FileExistsError, PermissionError) as e:
 				self.body.txt.insert_text(f"# {e}")
 
+			self.body.txt.set_edit_pos(0)
+
+		elif command[0] == 'g' and command[1] == "info":
+			self.body.txt.set_edit_pos(0)
+			self.body.txt.insert_text(f"# {repr(self.SeverTk)}\n")
 			self.body.txt.set_edit_pos(0)
 
 
@@ -168,15 +173,16 @@ class ConsolesColumns(urwid.Columns):
 			self.set_focus(self.__next_focus())
 
 		elif key == 'f1':
-			self.contents[self.focus_col][0].set_focus("body")
-
-		elif key == 'f2':
-			self.contents[self.focus_col][0].set_focus("footer")
-
-		elif key == 'ctrl left':
 			self.set_focus(self.__last_focus())
 
-		elif key == 'ctrl right':
+		elif key == 'f2':
+
+			self.contents[self.focus_col][0].set_focus("body")
+
+		elif key == 'f3':
+			self.contents[self.focus_col][0].set_focus("footer")
+
+		elif key == 'f4':
 			self.set_focus(self.__next_focus())
 
 		"""
