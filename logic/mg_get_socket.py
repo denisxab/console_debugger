@@ -37,7 +37,7 @@ class _MgGetSocket:
         def thread_for_wait_client():
             self.user, self.address = self.server_sock.accept()  # Ждет данные от клиентов, не проходит дальше пока нет данных
             DataForSocket.SendTrueConnect(self.user)  # Отправлять можно только байты
-            print(f"{self.Port}:{self.user.fileno()} ", "[CONNECTED] ", self.address)
+            # print(f"{self.Port}:{self.user.fileno()} ", "[CONNECTED] ", self.address)
 
         Thread(target=thread_for_wait_client, daemon=True).start()
 
@@ -52,7 +52,7 @@ class _MgGetSocket:
         """
         Получить настройки сокета
         """
-        dirs = dirname(__file__).replace("\\", "/").split("/")[:-2]
+        dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
         dirs.append("setting_socket.json")
         with open("/".join(dirs), "r") as f:
             res = json.load(f)

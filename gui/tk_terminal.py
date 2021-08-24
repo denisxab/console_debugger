@@ -3,20 +3,13 @@
 """
 __all__ = ["ViewTk"]
 
-import sys
 from collections import deque
-from os.path import dirname
 from pickle import UnpicklingError
 from tkinter import Tk, Frame, Button, OUTSIDE, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
-
-import urwid as urwid
-
-dirs = dirname(__file__).replace("\\", "/").split("/")[:-2]
-sys.path.append("/".join(dirs))
-
+from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
-from .mg_get_socket import _MgGetSocket
+from logic.mg_get_socket import _MgGetSocket
 
 
 class ViewTk:
@@ -52,12 +45,12 @@ class ViewTk:
 		self.SeverTk = _MgGetSocket()
 		print(self.SeverTk.Port, " Ran SeverMg")
 		self.SeverTk.ConnectToClient()  # Ждем подключение клиента
-		self.CheckUpdateQueue()
+		self.CheckUpdateServer()
 		#################
 
 		self.windowTk.mainloop()
 
-	def CheckUpdateQueue(self):
+	def CheckUpdateServer(self):
 		"""
 		Проверять данные из сокета и обновлять внутреннею структуру
 		"""
@@ -93,7 +86,6 @@ class ViewTk:
 					                        ))
 
 				except (UnpicklingError, EOFError):
-					# user.close()  # Закрыть соединение с клиентом
 					print(fragment)
 					print('{} {} {}'.format("$" * 40,
 					                        "Ошибка распаковки",
@@ -110,7 +102,7 @@ class ViewTk:
 			else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
 				self.SeverTk.UserClose()
 
-		self.windowTk.after(10, self.CheckUpdateQueue)
+		self.windowTk.after(10, self.CheckUpdateServer)
 
 	def __construct_widget(self, names_console: Optional[List[str]]):
 		"""
@@ -149,8 +141,7 @@ class ViewTk:
 		Получить размер окна сохраненный в файле
 		"""
 		try:
-			with open("{path_}/static/config.txt".format(
-					path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])), "r")as f:
+			with open(f"{dirname(__file__)}/static/config.txt", "r")as f:
 				return f.read()
 
 		except FileNotFoundError:
@@ -165,8 +156,7 @@ class ViewTk:
 		"""
 		Записать положение и размер окна в файл
 		"""
-		with open("{path_}/static/config.txt".format(
-				path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])), "w")as f:
+		with open(f"{dirname(__file__)}/static/config.txt", "w")as f:
 			x = self.windowTk.winfo_x()
 			y = self.windowTk.winfo_y()
 			w = self.windowTk.winfo_width()
@@ -195,11 +185,15 @@ class ViewTk:
 			EntryInput_obj.delete(0, "end")
 
 		elif len(command) == 3 and command[0] == "save":
-			path_ = "{}/{}".format(command[2].replace("\\", "/"), command[1])
-			with open(path_, "w", encoding="utf-8")as f:
-				f.write(self.Arr_textWidget[index_console].get(1.0, "end"))
+			try:
+				path_ = "{}/{}".format(command[2].replace("\\", "/"), command[1])
+				with open(path_, "w", encoding="utf-8")as f:
+					f.write(self.Arr_textWidget[index_console].get(1.0, "end"))
 
-			ViewTk.display_info(f"{index_console} >> {path_}")
+				ViewTk.display_info(f"{index_console} >> {path_}")
+			except (FileNotFoundError, FileExistsError, PermissionError) as e:
+				ViewTk.display_info(f"{e}")
+
 			EntryInput_obj.delete(0, "end")
 
 		elif command[0] == 'g' and command[1] == "info":
@@ -280,4 +274,5 @@ class ViewTk:
 
 
 if __name__ == '__main__':
+	print(path)
 	...
