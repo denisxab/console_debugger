@@ -1,6 +1,7 @@
 __all__ = ["run", ]
 
 import asyncio
+import os
 from pickle import UnpicklingError
 from typing import List, Optional
 
@@ -64,14 +65,18 @@ class ConsoleFrame(urwid.Frame):
 			self.body.txt.set_edit_text('')
 
 		elif len(command) == 3 and command[0] == "save":
+
 			self.body.txt.set_edit_pos(0)
 			try:
 				path_ = "{}/{}".format(command[2].replace("\\", "/"), command[1])
 				with open(path_, "w", encoding="utf-8")as f:
 					f.write(self.body.txt.get_edit_text())
-				self.body.txt.set_edit_text(f"# Save {command[1]} >> {path_}")
+
+				self.body.txt.insert_text(f"# Save {command[1]} >> {path_}\n")
+
 			except (FileNotFoundError, FileExistsError, PermissionError) as e:
-				self.body.txt.set_edit_text(f"# {e}")
+				self.body.txt.insert_text(f"# {e}")
+
 			self.body.txt.set_edit_pos(0)
 
 
@@ -162,10 +167,10 @@ class ConsolesColumns(urwid.Columns):
 		if key == 'tab':
 			self.set_focus(self.__next_focus())
 
-		elif key == 'ctrl up':
+		elif key == 'f1':
 			self.contents[self.focus_col][0].set_focus("body")
 
-		elif key == 'ctrl down':
+		elif key == 'f2':
 			self.contents[self.focus_col][0].set_focus("footer")
 
 		elif key == 'ctrl left':
@@ -264,6 +269,7 @@ def run():
 		loop.run()
 	except KeyboardInterrupt:
 		print("Exit")
+		os.system("clear")
 		exit()
 
 
