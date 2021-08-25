@@ -1,6 +1,6 @@
 __all__ = ["_MgGetSocket"]
 
-import json
+from json import load
 from os.path import dirname
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
@@ -37,13 +37,9 @@ class _MgGetSocket:
 
 	# Ждать нового подключение от клиента
 	def ConnectToClient(self):
-		def thread_for_wait_client():
-			self.user, self.address = self.server_sock.accept()  # Ждет данные от клиентов, не проходит дальше пока нет данных
-			DataForSocket.SendTrueConnect(self.user)  # Отправлять можно только байты
-
+		self.user, self.address = self.server_sock.accept()  # Ждет данные от клиентов, не проходит дальше пока нет данных
 		# print(f"{self.Port}:{self.user.fileno()} ", "[CONNECTED] ", self.address)
-
-		Thread(target=thread_for_wait_client, daemon=True).start()
+		DataForSocket.SendTrueConnect(self.user)  # Отправлять можно только байты
 
 	def UserClose(self):
 		if self.user:
@@ -60,7 +56,7 @@ class _MgGetSocket:
 		dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
 		dirs.append("setting_socket.json")
 		with open("/".join(dirs), "r") as f:
-			res = json.load(f)
+			res = load(f)
 		return res["HOST"], res["PORT"]
 
 	def __repr__(self) -> str:

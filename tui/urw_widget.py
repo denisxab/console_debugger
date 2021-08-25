@@ -42,6 +42,9 @@ class ConsolesColumns(urwid.Columns):
 		self.__index_column[0] = 0
 		self.__index_column[1] = len(title_names) - 1
 
+	def update_widget(self):
+		self.get_focus()
+
 	def SendTextInIndex(self, index_: int, text_: str):
 		"""
 		Вставить текст в текстовое поле по его индексу:

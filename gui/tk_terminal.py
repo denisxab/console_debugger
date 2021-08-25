@@ -3,12 +3,15 @@ __all__ = ["ViewGui"]
 from collections import deque
 from os.path import dirname
 from pickle import UnpicklingError
+from threading import Thread
 from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
 
 # from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket
+
+i = 0
 
 
 class ViewGui:
@@ -18,9 +21,9 @@ class ViewGui:
 	TEXT_COLOR = "#cad0d9"
 	SIZE_TEXT_CONSOLE = 7
 
-	def __init__(self):
+	SeverGu: Optional[_MgGetSocket] = None
 
-		self.title_name: List[str] = []
+	def __init__(self):
 
 		self.windowTk = Tk()
 		self.windowTk.title("debugger_tk")
@@ -41,68 +44,65 @@ class ViewGui:
 
 		self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
 
-		# Server
-		self.SeverTk = _MgGetSocket()
-		print(self.SeverTk.Port, " Ran SeverMg")
-		self.SeverTk.ConnectToClient()  # Ждем подключение клиента
-		self.CheckUpdateServer()
-		#################
+		self.__run_Thread()
 
 		self.windowTk.mainloop()
 
-	def CheckUpdateServer(self):
+	def __run_Thread(self):
+		Thread(target=ViewGui.CheckUpdateServer,
+		       args=(self,),
+		       daemon=True, ).start()
+
+	@classmethod
+	def CheckUpdateServer(cls, self):
 		"""
 		Проверять данные из сокета и обновлять внутреннею структуру
 		"""
+		try:
+			# Server
+			cls.SeverGu = _MgGetSocket()
+		except OSError as e:
+			cls.SeverGu = None
+			print(e)
+			exit(0)
 
-		if self.SeverTk.user:
+		print(cls.SeverGu.Port, "# Ran SeverMg")
+		cls.SeverGu.ConnectToClient()  # Ждем подключение клиента
+		print(f"# {cls.SeverGu.Host}:{cls.SeverGu.Port}\n")
+		#
+		title_name: List[str] = []
 
-			fragment = deque()
+		while True:
+			if cls.SeverGu.user:
+				if cls.SeverGu.user.fileno() != -1:  # Если сервер не отсоединился от клиента
+					try:
+						flag, id_, data_l = DataForSocket.GetDataObj(cls.SeverGu.user)
 
-			if self.SeverTk.user.fileno() != -1:  # Если сервер не отсоединился от клиента
-				try:
+						if flag == DataFlag:
+							self.Arr_textWidget[id_].insert("0.1", data_l[0])
 
-					flag, id_, data_l = DataForSocket.GetDataObj(self.SeverTk.user)
+						elif flag == InitTitleNameFlag:
+							if title_name != data_l:
+								title_name = data_l
+								self.__deconstruct_widget()
+								self.__construct_widget(data_l)
 
-					# print(f"{self.SeverTk.Port}:{self.SeverTk.user.fileno()} ", id_, data_l[0])
+						elif flag == EndSend:
+							cls.SeverGu.UserClose()
 
-					if flag == DataFlag:
-						self.Arr_textWidget[id_].insert("0.1", data_l[0])
+					except ConnectionResetError:  # Если клиент разорвал соединение
+						cls.SeverGu.UserClose()  # Закрыть соединение с клиентом
+						print("Клиент разорвал соединение")
 
-					elif flag == InitTitleNameFlag:
-						if self.title_name != data_l:
-							self.title_name = data_l
-							self.__deconstruct_widget()
-							self.__construct_widget(data_l)
+					except (UnpicklingError, EOFError):
+						print("Ошибка распаковки")
 
-					elif flag == EndSend:
-						self.SeverTk.UserClose()
+					except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
+						cls.SeverGu.UserClose()  # Закрыть соединение с клиентом
+						print("Если клиенту невозможно отправить данные")
 
-				except ConnectionResetError:  # Если клиент разорвал соединение
-					self.SeverTk.UserClose()  # Закрыть соединение с клиентом
-					print('{} {} {}'.format("*" * 40,
-					                        "Клиент разорвал соединение",
-					                        "*" * 40,
-					                        ))
-
-				except (UnpicklingError, EOFError):
-					print(fragment)
-					print('{} {} {}'.format("$" * 40,
-					                        "Ошибка распаковки",
-					                        "$" * 40,
-					                        ))
-
-				except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
-					self.SeverTk.UserClose()  # Закрыть соединение с клиентом
-					print('{} {} {}'.format("$" * 40,
-					                        "Если клиенту невозможно отправить данные",
-					                        "$" * 40,
-					                        ))
-
-			else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
-				self.SeverTk.UserClose()
-
-		self.windowTk.after(10, self.CheckUpdateServer)
+				else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
+					cls.SeverGu.UserClose()
 
 	def __construct_widget(self, names_console: Optional[List[str]]):
 		"""
@@ -163,7 +163,7 @@ class ViewGui:
 			h = self.windowTk.winfo_height()
 			f.write(f"{w}x{h}+{x}+{y}")
 
-	def __execute_button(self, event, index_console: int, EntryInput_obj: Entry):
+	def ExecuteCommand(self, event, index_console: int, EntryInput_obj: Entry):
 		"""
 		Обработчик ввода
 
@@ -197,7 +197,11 @@ class ViewGui:
 			EntryInput_obj.delete(0, "end")
 
 		elif command[0] == 'g' and command[1] == "info":
-			ViewGui.display_info(f"{repr(self.SeverTk)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
+			ViewGui.display_info(f"{repr(ViewGui.SeverGu)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
+			EntryInput_obj.delete(0, "end")
+
+		elif command[0] == 'g' and command[1] == "run" and ViewGui.SeverGu == None:
+			self.__run_Thread()
 			EntryInput_obj.delete(0, "end")
 
 	def _form_horizon_console(self, names_console: List[str],
@@ -228,8 +232,8 @@ class ViewGui:
 			                               fg=ViewGui.TEXT_COLOR,
 			                               height=1,
 			                               font=('consolas', f'{ViewGui.SIZE_TEXT_CONSOLE}'),
-			                               command=lambda i=index_console, e=EntryInput: self.__execute_button(None, i,
-			                                                                                                   e))
+			                               command=lambda i=index_console, e=EntryInput: self.ExecuteCommand(None, i,
+			                                                                                                 e))
 			###############
 			txt: Text = Text(Cons,
 			                 width=80,  # Количество символов по вертикали
@@ -240,7 +244,7 @@ class ViewGui:
 			                 insertbackground=ViewGui.TEXT_COLOR,
 			                 )
 			###############
-			EntryInput.bind('<Return>', lambda v, i=index_console, e=EntryInput: self.__execute_button(None, i, e))
+			EntryInput.bind('<Return>', lambda v, i=index_console, e=EntryInput: self.ExecuteCommand(None, i, e))
 			EntryInput.insert(0, "clear")
 			###############
 
@@ -265,5 +269,4 @@ class ViewGui:
 
 
 if __name__ == '__main__':
-	print(path)
 	...
