@@ -1,9 +1,7 @@
 from os.path import dirname
 from sys import path
 
-from .debugger import *
-
-dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
-dirs.append("helpful")
+dirs = dirname(__file__).replace("\\", "/").split("/")[:-2]
 path.append("/".join(dirs))
 
+from console_debugger.logic.debugger import Debugger

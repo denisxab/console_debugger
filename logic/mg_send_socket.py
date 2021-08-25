@@ -7,8 +7,8 @@ from socket import socket, AF_INET, SOCK_STREAM
 from sys import argv
 from typing import List
 
-from date_obj import DataForSocket
-from helpful import ServerError
+from console_debugger.date_obj import DataForSocket
+from console_debugger.helpful import ServerError
 
 
 class _MgSendSocket:

@@ -10,17 +10,16 @@ __all__ = ["dopen",
 
 from datetime import datetime
 from inspect import currentframe
-from os.path import abspath
+from os.path import abspath, dirname
 from pprint import pformat
 from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
 
-from __init__ import *
-from helpful.coloring_text import style_t, StyleText
-from helpful.stup_debugger import ServerError
-from helpful.templates import *
-from logic.mg_send_socket import _MgSendSocket
 
+from console_debugger.helpful.coloring_text import style_t, StyleText
+from console_debugger.helpful.stup_debugger import ServerError
+from console_debugger.helpful.templates import *
+from console_debugger.logic.mg_send_socket import _MgSendSocket
 
 class Debugger:
 	# Все экземпляры дебагеров

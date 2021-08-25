@@ -1,14 +1,12 @@
-"""
-Графическая оболочка
-"""
 __all__ = ["ViewGui"]
 
 from collections import deque
+from os.path import dirname
 from pickle import UnpicklingError
 from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
 
-from __init__ import *
+# from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket
 
@@ -20,7 +18,7 @@ class ViewGui:
 	TEXT_COLOR = "#cad0d9"
 	SIZE_TEXT_CONSOLE = 7
 
-	def __init__(self, names_console: List[str]):
+	def __init__(self):
 
 		self.title_name: List[str] = []
 
@@ -39,7 +37,7 @@ class ViewGui:
 		self.frameConsole: Optional[Frame] = None
 		self.bt1: Optional[Button] = None
 		self.Arr_textWidget: List[Text] = []
-		self.__construct_widget(names_console)
+		self.__construct_widget(["1", "2"])
 
 		self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
 

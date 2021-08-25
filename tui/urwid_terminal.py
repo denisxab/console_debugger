@@ -1,18 +1,16 @@
 __all__ = ["ViewTui", ]
 
-import asyncio
-import os
-import socket
+from asyncio import sleep, get_event_loop
+from os import system
+from socket import gaierror
 from pickle import UnpicklingError
 from typing import List, Optional
 
 import urwid
-from urw_widget import ConsolesColumns
-
-from __init__ import *
-from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
-from logic.mg_get_socket import _MgGetSocket
-from tui.urw_widget import MenuConsole, ConsoleFrame
+from console_debugger.tui.urw_widget import ConsolesColumns
+from console_debugger.date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
+from console_debugger.tui.urw_widget import MenuConsole, ConsoleFrame
+from console_debugger.logic.mg_get_socket import _MgGetSocket
 
 
 class ViewTui:
@@ -24,7 +22,7 @@ class ViewTui:
 	SeverTk: Optional[_MgGetSocket] = None
 
 	def __init__(self):
-		alsop = asyncio.get_event_loop()
+		alsop = get_event_loop()
 
 		self.console_columns = ConsolesColumns(["1", "2", "3", "4"], self)
 
@@ -48,7 +46,7 @@ class ViewTui:
 			self.loop.run()
 		except KeyboardInterrupt:
 			print("Exit")
-			os.system("clear")
+			system("clear")
 			exit()
 
 	def ExecuteCommand(self, output_widget: object, command: str):
@@ -77,7 +75,7 @@ class ViewTui:
 				output_widget.set_text(f"{repr(ViewTui.SeverTk)}\n")
 				ViewTui.SeverTk.ConnectToClient()  # Ждем подключение клиента
 
-			except (socket.gaierror, OSError) as e:
+			except (gaierror, OSError) as e:
 				output_widget.set_text(f"{e}")
 
 	@classmethod
@@ -102,13 +100,13 @@ class ViewTui:
 
 						if flag == DataFlag:
 							clm.SendTextInIndex(id_, data_l[0])
-							await asyncio.sleep(0)
+							await sleep(0)
 
 						elif flag == InitTitleNameFlag:
 							if title_name != data_l:
 								title_name = data_l
 								clm.CreateNewTitleName(data_l)
-								await asyncio.sleep(0)
+								await sleep(0)
 
 						elif flag == EndSend:
 							ViewTui.SeverTk.UserClose()
@@ -126,9 +124,8 @@ class ViewTui:
 				else:  # Если сервер отсоединился от клиента, то ждать следующего подключение
 					ViewTui.SeverTk.UserClose()
 
-			await asyncio.sleep(0)
+			await sleep(0)
 
 
 if __name__ == '__main__':
-	print(path)
 	...
