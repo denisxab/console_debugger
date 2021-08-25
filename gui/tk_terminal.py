@@ -1,7 +1,7 @@
 """
 Графическая оболочка
 """
-__all__ = ["ViewTk"]
+__all__ = ["ViewGui"]
 
 from collections import deque
 from pickle import UnpicklingError
@@ -13,7 +13,7 @@ from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket
 
 
-class ViewTk:
+class ViewGui:
 	GREEN = "#487861"
 	BG_COLOR = "#171b22"
 	BLOCK_COLOR = "#0e1117"
@@ -117,7 +117,7 @@ class ViewTk:
 
 		self.bt1 = Button(self.windowTk,
 		                  text="save geometry",
-		                  bg=ViewTk.GREEN,
+		                  bg=ViewGui.GREEN,
 		                  command=lambda: self.__set_geometer()
 		                  )
 		self.bt1.pack(fill="x")
@@ -192,14 +192,14 @@ class ViewTk:
 				with open(path_, "w", encoding="utf-8")as f:
 					f.write(self.Arr_textWidget[index_console].get(1.0, "end"))
 
-				ViewTk.display_info(f"{index_console} >> {path_}")
+				ViewGui.display_info(f"{index_console} >> {path_}")
 			except (FileNotFoundError, FileExistsError, PermissionError) as e:
-				ViewTk.display_info(f"{e}")
+				ViewGui.display_info(f"{e}")
 
 			EntryInput_obj.delete(0, "end")
 
 		elif command[0] == 'g' and command[1] == "info":
-			ViewTk.display_info(f"{repr(self.SeverTk)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
+			ViewGui.display_info(f"{repr(self.SeverTk)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
 			EntryInput_obj.delete(0, "end")
 
 	def _form_horizon_console(self, names_console: List[str],
@@ -220,26 +220,26 @@ class ViewTk:
 		for index_console, item in enumerate(names_console):
 			Cons = Frame(frameConsoles)
 			EntryInput = Entry(Cons,
-			                   font=('consolas', f'{ViewTk.SIZE_TEXT_CONSOLE}'),
-			                   bg=ViewTk.BLOCK_COLOR, fg=ViewTk.TEXT_COLOR,
-			                   insertbackground=ViewTk.TEXT_COLOR, )
+			                   font=('consolas', f'{ViewGui.SIZE_TEXT_CONSOLE}'),
+			                   bg=ViewGui.BLOCK_COLOR, fg=ViewGui.TEXT_COLOR,
+			                   insertbackground=ViewGui.TEXT_COLOR, )
 			###############
 			ButtonExecute: Button = Button(Cons,
 			                               text=item,
-			                               bg=ViewTk.BLOCK_COLOR,
-			                               fg=ViewTk.TEXT_COLOR,
+			                               bg=ViewGui.BLOCK_COLOR,
+			                               fg=ViewGui.TEXT_COLOR,
 			                               height=1,
-			                               font=('consolas', f'{ViewTk.SIZE_TEXT_CONSOLE}'),
+			                               font=('consolas', f'{ViewGui.SIZE_TEXT_CONSOLE}'),
 			                               command=lambda i=index_console, e=EntryInput: self.__execute_button(None, i,
 			                                                                                                   e))
 			###############
 			txt: Text = Text(Cons,
 			                 width=80,  # Количество символов по вертикали
 			                 height=20,  # Количество символов по горизонтали
-			                 bg=ViewTk.BG_COLOR,
-			                 fg=ViewTk.TEXT_COLOR,
-			                 font=('consolas', f'{ViewTk.SIZE_TEXT_CONSOLE}'),
-			                 insertbackground=ViewTk.TEXT_COLOR,
+			                 bg=ViewGui.BG_COLOR,
+			                 fg=ViewGui.TEXT_COLOR,
+			                 font=('consolas', f'{ViewGui.SIZE_TEXT_CONSOLE}'),
+			                 insertbackground=ViewGui.TEXT_COLOR,
 			                 )
 			###############
 			EntryInput.bind('<Return>', lambda v, i=index_console, e=EntryInput: self.__execute_button(None, i, e))

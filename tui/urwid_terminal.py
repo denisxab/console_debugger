@@ -1,282 +1,135 @@
-__all__ = ["run", ]
+__all__ = ["ViewTui", ]
 
 import asyncio
 import os
+import socket
 from pickle import UnpicklingError
 from typing import List, Optional
 
 import urwid
+from urw_widget import ConsolesColumns
 
 from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket
-
-palette = [
-	('label_text1', 'black', 'dark cyan',),
-	('label_text2', 'black', 'light cyan',),
-	('button1', 'black', 'dark cyan',),
-	('button2', 'black', 'light cyan',),
-]
+from tui.urw_widget import MenuConsole
 
 
-class ConsoleFrame(urwid.Frame):
-	"""
-	Объект консоль
-		- Заголовок
-		- Многострочное текстовое поле
-		- Однострочное текстовое поле
-	"""
-	__index_style = 0
+class ViewTui:
+	palette = [
+		('label_text1', 'light cyan', 'black',),
+	]
+	urwid.set_encoding('utf8')
 
-	def __init__(self, title: str):
-		header = urwid.Text((self.__next__style(), title), align="center")
-		body = ConversationListBox()
+	SeverTk: Optional[_MgGetSocket] = None
 
-		atr = urwid.LineBox(EditLine(edit_text="clear", root_=self))
-		footer = atr
-		super().__init__(body, header, footer, focus_part='body')
+	def __init__(self):
+		alsop = asyncio.get_event_loop()
 
-	@classmethod
-	def __next__style(cls) -> str:
-		if cls.__index_style == 0:
-			cls.__index_style = 1
-			return "button1"
-		else:
-			cls.__index_style = 0
-			return "button2"
+		self.console_columns = ConsolesColumns(["1", "2", "3", "4"], self)
 
-	def ExecuteCommand(self, command: str):
+		self.menu = MenuConsole(self.ExecuteCommand)
+
+		self.gInfoOverlay = urwid.Overlay(self.menu,
+		                                  self.console_columns,
+		                                  align="center",
+		                                  valign="middle",
+		                                  width=("relative", 60),
+		                                  height=("relative", 30),
+		                                  )
+
+		self.loop = urwid.MainLoop(self.console_columns,
+		                           palette=ViewTui.palette,
+		                           event_loop=urwid.AsyncioEventLoop(loop=alsop),
+
+		                           )
+		alsop.create_task(ViewTui.CheckUpdateServer(self.console_columns))
+		try:
+			self.loop.run()
+		except KeyboardInterrupt:
+			print("Exit")
+			os.system("clear")
+			exit()
+
+	def ExecuteCommand(self, output_widget: object, command: str):
 
 		"""
 		Обработчик ввода
-
-		- clear = Отчистить консоль
-
-		- save <name> <path> = сохранить в файл
-			- `name` имя файла
-			- `path` путь к папке
-
-			save test.txt D:\
+			- `info` = Информация о сокете
+			- `close` = Скрыть меню
+			- `server <HOST> <PORT>` = Назначить прослушивание нового сокета
+			- `help` = Подсказка
 		"""
 
-		command = command.split()
+		command: List[str] = command.split()
 
-		if command[0] == "clear":
-			self.body.txt.set_edit_text('')
+		if command[0] == "info":
+			output_widget.set_text(f"{repr(ViewTui.SeverTk)}\n")
 
-		elif len(command) == 3 and command[0] == "save":
+		elif command[0] == "close":
+			self.loop.widget = self.console_columns
 
-			self.body.txt.set_edit_pos(0)
+		elif command[0] == "help":
+
+			output_widget.set_text(ViewTui.ExecuteCommand.__doc__)
+
+		elif len(command) == 3 and command[0] == "server":
 			try:
-				path_ = "{}/{}".format(command[2].replace("\\", "/"), command[1])
-				with open(path_, "w", encoding="utf-8")as f:
-					f.write(self.body.txt.get_edit_text())
+				ViewTui.SeverTk.UserClose()
+				ViewTui.SeverTk = _MgGetSocket(Host=str(command[1]), Port=int(command[2]))
+				output_widget.set_text(f"{repr(ViewTui.SeverTk)}\n")
+				ViewTui.SeverTk.ConnectToClient()  # Ждем подключение клиента
 
-				self.body.txt.insert_text(f"# Save {command[1]} >> {path_}\n")
-
-			except (FileNotFoundError, FileExistsError, PermissionError) as e:
-				self.body.txt.insert_text(f"# {e}")
-
-			self.body.txt.set_edit_pos(0)
-
-		elif command[0] == 'g' and command[1] == "info":
-			self.body.txt.set_edit_pos(0)
-			self.body.txt.insert_text(f"# {repr(self.SeverTk)}\n")
-			self.body.txt.set_edit_pos(0)
-
-
-class EditLine(urwid.Edit):
-	"""
-	Однострочное поле для ввода текста | команд
-	"""
-
-	def __init__(self, caption="", edit_text="", align="left", root_=Optional[ConsoleFrame]):
-		self.root = root_
-		super().__init__(caption, edit_text, multiline=False, align=align)
-
-	def keypress(self, size, key):
-		if key == "enter":
-			self.root.ExecuteCommand(self.get_edit_text())
-			self.set_edit_text('')
-		super(EditLine, self).keypress(size, key)
-
-
-class ConversationListBox(urwid.ListBox):
-	"""
-	Многострочное текстовое поле
-	"""
-	__index_style = 0
-
-	def __init__(self):
-		self.__index_style = 0
-		self.txt = urwid.Edit(multiline=True, align="left")
-		at = urwid.AttrMap(self.txt, self.__next__style())
-		body = urwid.SimpleFocusListWalker([at])
-		super(ConversationListBox, self).__init__(body)
-
-	def keypress(self, size, key):
-		super(ConversationListBox, self).keypress(size, key)
+			except (socket.gaierror, OSError) as e:
+				output_widget.set_text(f"{e}")
 
 	@classmethod
-	def __next__style(cls) -> str:
-		if cls.__index_style == 0:
-			cls.__index_style = 1
-			return "label_text1"
-		else:
-			cls.__index_style = 0
-			return "label_text2"
-
-
-class ConsolesColumns(urwid.Columns):
-	"""
-	Колоны с консолями
-	"""
-
-	def __init__(self, title_names: List[str], dividechars=0, focus_column=0, min_width=1, box_columns=None):
-		widget_list = [ConsoleFrame(name) for name in title_names]
-		self.__index_column = [focus_column, len(title_names) - 1]  # Для цикличного перемежения
-		super().__init__(widget_list, dividechars, focus_column, min_width, box_columns)
-
-	# self.keypress(1,1)
-
-	def CreateNewTitleName(self, title_name: List[str]):
+	async def CheckUpdateServer(cls, clm: ConsolesColumns):
 		"""
-		Создать новые консоли
+		Асинхронная функция по получению данных из сокета
 		"""
-		for _ in range(self.__index_column[1] + 1):
-			self.__del_widget_in_index(0)
 
-		for name in title_name:
-			self.__append_widget(name)
+		ViewTui.SeverTk = _MgGetSocket()
 
-		self.set_focus(0)
-		self.__index_column[0] = 0
-		self.__index_column[1] = len(title_name) - 1
+		clm.SendSelfInfo("# Run Server")
+		ViewTui.SeverTk.ConnectToClient()  # Ждем подключение клиента
 
-	def SendTextInIndex(self, index_: int, text_: str):
-		"""
-		Вставить текст в текстовое поле по его индексу:
-		"""
-		self.contents[index_][0].body.txt.set_edit_pos(0)
-		self.contents[index_][0].body.txt.insert_text(text_)
-		self.contents[index_][0].body.txt.set_edit_pos(0)
+		clm.SendSelfInfo(f"# {ViewTui.SeverTk.Host}:{ViewTui.SeverTk.Port}\n")
+		title_name: List[str] = []
 
-	def SendSelfInfo(self, text: str):
-		self.SendTextInIndex(0, text)
+		while True:
+			if ViewTui.SeverTk.user:
+				if ViewTui.SeverTk.user.fileno() != -1:  # Если сервер не отсоединился от клиента
+					try:
+						flag, id_, data_l = DataForSocket.GetDataObj(ViewTui.SeverTk.user)
 
-	def keypress(self, size, key):
-
-		"""
-		Обработка перемещений между окнами
-		"""
-		if key == 'tab':
-			self.set_focus(self.__next_focus())
-
-		elif key == 'f1':
-			self.set_focus(self.__last_focus())
-
-		elif key == 'f2':
-
-			self.contents[self.focus_col][0].set_focus("body")
-
-		elif key == 'f3':
-			self.contents[self.focus_col][0].set_focus("footer")
-
-		elif key == 'f4':
-			self.set_focus(self.__next_focus())
-
-		"""
-		Если в фокусе текстовое поле для команд то перенаправляет вывод клавиш в него
-		"""
-		if self.contents[self.focus_col][0].get_focus() == "footer":
-			if key not in ("down", "up"):
-				return self.contents[self.focus_col][0].footer.base_widget.keypress([size, ], key)
-		else:
-			"""		
-			Отправляем кнопки в обработчики текстового поля
-			"""
-			return self.contents[self.focus_col][0].body.keypress(size, key)
-
-	def __del_widget_in_index(self, index):
-		self.contents.pop(index)
-
-	def __append_widget(self, title):
-		self.contents.append([ConsoleFrame(title), self.options()])
-
-	def __next_focus(self):
-		if self.__index_column[0] < self.__index_column[1]:
-			self.__index_column[0] += 1
-		else:
-			self.__index_column[0] = 0
-		return self.__index_column[0]
-
-	def __last_focus(self):
-		if self.__index_column[0] > 0:
-			self.__index_column[0] -= 1
-		else:
-			self.__index_column[0] = self.__index_column[1]
-		return self.__index_column[0]
-
-
-async def CheckUpdateServer(clm: ConsolesColumns):
-	"""
-	Асинхронная функция по получению данных из сокета
-	"""
-
-	SeverTk = _MgGetSocket()
-	clm.SendSelfInfo("# Run Server")
-	SeverTk.ConnectToClient()  # Ждем подключение клиента
-
-	clm.SendSelfInfo(f"# {SeverTk.Host}:{SeverTk.Port}\n")
-	title_name: List[str] = []
-
-	while True:
-		if SeverTk.user:
-			if SeverTk.user.fileno() != -1:  # Если сервер не отсоединился от клиента
-				try:
-					flag, id_, data_l = DataForSocket.GetDataObj(SeverTk.user)
-
-					if flag == DataFlag:
-						clm.SendTextInIndex(id_, data_l[0])
-						await asyncio.sleep(0)
-
-					elif flag == InitTitleNameFlag:
-						if title_name != data_l:
-							title_name = data_l
-							clm.CreateNewTitleName(data_l)
+						if flag == DataFlag:
+							clm.SendTextInIndex(id_, data_l[0])
 							await asyncio.sleep(0)
 
-					elif flag == EndSend:
-						SeverTk.UserClose()
+						elif flag == InitTitleNameFlag:
+							if title_name != data_l:
+								title_name = data_l
+								clm.CreateNewTitleName(data_l)
+								await asyncio.sleep(0)
 
-				except ConnectionResetError:  # Если клиент разорвал соединение
-					SeverTk.UserClose()  # Закрыть соединение с клиентом
-					clm.SendSelfInfo("Клиент разорвал соединение")
+						elif flag == EndSend:
+							ViewTui.SeverTk.UserClose()
 
-				except (UnpicklingError, EOFError):  # Не получилось распаковать данные
-					clm.SendSelfInfo("Ошибка распаковки")
+					except ConnectionResetError:  # Если клиент разорвал соединение
+						ViewTui.SeverTk.UserClose()  # Закрыть соединение с клиентом
+						clm.SendSelfInfo("Клиент разорвал соединение")
 
-				except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
-					SeverTk.UserClose()  # Закрыть соединение с клиентом
-					clm.SendSelfInfo("Если клиенту невозможно отправить данные")
-			else:  # Если сервер отсоединился от клиента, то ждать следующего подключение
-				SeverTk.UserClose()
+					except (UnpicklingError, EOFError):  # Не получилось распаковать данные
+						clm.SendSelfInfo("Ошибка распаковки")
 
-		await asyncio.sleep(0)
+					except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
+						ViewTui.SeverTk.UserClose()  # Закрыть соединение с клиентом
+						clm.SendSelfInfo("Если клиенту невозможно отправить данные")
+				else:  # Если сервер отсоединился от клиента, то ждать следующего подключение
+					ViewTui.SeverTk.UserClose()
 
-
-def run():
-	urwid.set_encoding('utf8')
-	alsop = asyncio.get_event_loop()
-	cl = ConsolesColumns(["1", "2"])
-	loop = urwid.MainLoop(cl, palette=palette, event_loop=urwid.AsyncioEventLoop(loop=alsop))
-	alsop.create_task(CheckUpdateServer(cl))
-	try:
-		loop.run()
-	except KeyboardInterrupt:
-		print("Exit")
-		os.system("clear")
-		exit()
+			await asyncio.sleep(0)
 
 
 if __name__ == '__main__':

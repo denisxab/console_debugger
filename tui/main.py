@@ -1,4 +1,4 @@
-from urwid_terminal import run
+from urwid_terminal import ViewTui
 
 if __name__ == '__main__':
-	run()
+	ViewTui()
