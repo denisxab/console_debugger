@@ -1,5 +1,12 @@
-from typing import List, Callable
+__all__ = [
+	"ConsolesColumns",
+	"ConsoleFrame",
+	"EditLine",
+	"EditListBox",
+	"MenuConsole",
+]
 
+from typing import List, Callable
 import urwid
 
 
@@ -47,6 +54,15 @@ class ConsolesColumns(urwid.Columns):
 		self.SendTextInIndex(0, text)
 
 	def keypress(self, size, key):
+		"""Горячие клавиши:
+- `f1` = Влево
+- `f3` = Верх
+- `f2` = Вниз
+- `f4` = Вправо
+- `Tab`= Вправо
+- `shif + ЛКМ` = Выделить текст
+- `shif + ctrl + C` = Копировать выделенный текст
+- `shif + ctrl + V` = Вставить текст"""
 
 		"""
 		Обработка перемещений между окнами
@@ -141,17 +157,10 @@ class ConsoleFrame(urwid.Frame):
 
 	@staticmethod
 	def ExecuteCommand(output_widget: object, command: str):
+		"""Локальная консоль ввода:
+- `clear` = Отчистить консоль
+- `save <name> <path>` = сохранить в файл"""
 
-		"""
-		Обработчик ввода
-
-		- clear = Отчистить консоль
-
-		- save <name> <path> = сохранить в файл
-			- `name` имя файла
-			- `path` путь к папке
-
-		"""
 		command = command.split()
 
 		if command[0] == "clear":
@@ -188,7 +197,7 @@ class ConsoleFrame(urwid.Frame):
 				      " ", \
 				      '├', "└", "─", "─",
 
-			elif self.__max_column[0]+1 == self.__max_column[1]:
+			elif self.__max_column[0] + 1 == self.__max_column[1]:
 				res = "┬", "┼", "┐", "┤", \
 				      "│", \
 				      '┼', "┴", "┤", "┘",
@@ -254,8 +263,10 @@ class MenuConsole(urwid.LineBox):
 		- Текстовое поле для вывода
 	"""
 
-	def __init__(self, fun_execute_command):
+	def __init__(self, fun_execute_command, root_):
 		self.output_menu = urwid.Text("", align="left")
+		root_.ExecuteCommand(self.output_menu, "help")
+
 		self.text_menu = EditLine(output_widget=self.output_menu, fun_execute_command=fun_execute_command, )
 
 		line_menu = urwid.Divider("-")

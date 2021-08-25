@@ -12,7 +12,7 @@ from urw_widget import ConsolesColumns
 from __init__ import *
 from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from logic.mg_get_socket import _MgGetSocket
-from tui.urw_widget import MenuConsole
+from tui.urw_widget import MenuConsole, ConsoleFrame
 
 
 class ViewTui:
@@ -28,14 +28,14 @@ class ViewTui:
 
 		self.console_columns = ConsolesColumns(["1", "2", "3", "4"], self)
 
-		self.menu = MenuConsole(self.ExecuteCommand)
+		self.menu = MenuConsole(self.ExecuteCommand, root_=self)
 
 		self.gInfoOverlay = urwid.Overlay(self.menu,
 		                                  self.console_columns,
 		                                  align="center",
 		                                  valign="middle",
 		                                  width=("relative", 60),
-		                                  height=("relative", 30),
+		                                  height=("relative", 60),
 		                                  )
 
 		self.loop = urwid.MainLoop(self.console_columns,
@@ -52,14 +52,11 @@ class ViewTui:
 			exit()
 
 	def ExecuteCommand(self, output_widget: object, command: str):
-
-		"""
-		Обработчик ввода
-			- `info` = Информация о сокете
-			- `close` = Скрыть меню
-			- `server <HOST> <PORT>` = Назначить прослушивание нового сокета
-			- `help` = Подсказка
-		"""
+		"""Глобальная консоль ввода:
+- `info` = Информация о сокете
+- `close` = Скрыть меню
+- `server <HOST> <PORT>` = Назначить прослушивание нового сокета
+- `help` = Подсказка"""
 
 		command: List[str] = command.split()
 
@@ -70,8 +67,8 @@ class ViewTui:
 			self.loop.widget = self.console_columns
 
 		elif command[0] == "help":
-
-			output_widget.set_text(ViewTui.ExecuteCommand.__doc__)
+			output_widget.set_text(
+				f"{ConsolesColumns.keypress.__doc__}\n\n{ViewTui.ExecuteCommand.__doc__}\n\n{ConsoleFrame.ExecuteCommand.__doc__}")
 
 		elif len(command) == 3 and command[0] == "server":
 			try:
