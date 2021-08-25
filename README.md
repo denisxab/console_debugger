@@ -49,8 +49,8 @@
         ![](https://i.imgur.com/Kif40aB.png)
         
         - `"socket"` = Данные будут отправляться по сокету, в данный момент есть два варианта прослушивания сокета.
-        Через GUI [Tkinter](#про-режим-отображения-tkinter) `console_debugger/gui/main.pyw` или через TUI [Urwid](#про-режим-отображения-urwid) 
-        `console_debugger/tui/main.py`.
+        Через GUI [Tkinter](#про-режим-отображения-tkinter) `console_debugger/main.py gui` или через TUI [Urwid](#про-режим-отображения-urwid) 
+        `console_debugger/main.py tui`.
         Настройки для сокетов хранится в `console_debugger/setting_socket.json` в них можно изменить хост и порт приема|отправки.
         Если в процессе отправки данных через сокет возникнут ошибки, данные будут сохранены в файл.
              
@@ -299,6 +299,9 @@ xrdb -query
 ## Про режим отображения Urwid
 
 ![](https://i.imgur.com/DaThb5O.png)
+Работает также в терминале Pycharm
+![](https://i.imgur.com/DduI7JP.png)
+
 
 Этот режим поддерживается в терминалах Linux. Программа находиться в `console_debugger/tui/main.py`.
 
@@ -314,7 +317,7 @@ xrdb -query
     - `shif + ctrl + V` = Вставить текст
 
 
-    
+  
 - Можно отчистить консоль вывода если написать в нижнею консоль `clear` и нажать `Enter`
 
 ## Про доступную информации об экземпляре `Debugger`

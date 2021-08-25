@@ -15,11 +15,11 @@ from pprint import pformat
 from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
 
-
 from console_debugger.helpful.coloring_text import style_t, StyleText
 from console_debugger.helpful.stup_debugger import ServerError
 from console_debugger.helpful.templates import *
 from console_debugger.logic.mg_send_socket import _MgSendSocket
+
 
 class Debugger:
 	# Все экземпляры дебагеров
@@ -188,8 +188,8 @@ class Debugger:
 				if not Debugger._socket_obj.ConnectToServer(Debugger.AllActiveInstance()):
 					Debugger._socket_obj = None
 					dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
-					dirs.append("gui/main.pyw")
-					raise ServerError('Вероятно сервер не запущен\n {}'.format(
+					dirs.append("main.py tui")
+					raise ServerError('Вероятно сервер не запущен\n\n {}'.format(
 						"/".join(dirs)
 					))
 
