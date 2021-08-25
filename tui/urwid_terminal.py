@@ -24,8 +24,6 @@ class ViewTui:
 
 	def __init__(self):
 
-		alsop = get_event_loop()
-
 		self.console_columns: ConsolesColumns = ConsolesColumns(["1", "2", "3", "4"], self)
 
 		self.menu = MenuConsole(self.ExecuteCommand, root_=self)
@@ -39,13 +37,9 @@ class ViewTui:
 		                                  )
 
 		self.loop = urwid.MainLoop(self.console_columns,
-		                           palette=ViewTui.palette,
-		                           event_loop=urwid.AsyncioEventLoop(loop=alsop),
+		                           palette=ViewTui.palette, )
 
-		                           )
-
-		alsop.create_task(ViewTui.update_widget(self.console_columns))
-
+		self.loop.set_alarm_in(0.1, self.update_widget)
 		try:
 			self.__run_Thread()
 			self.loop.run()
@@ -54,15 +48,13 @@ class ViewTui:
 			system("clear")
 			exit()
 
-	@staticmethod
-	async def update_widget(clm: ConsolesColumns):
+	def update_widget(self, loop=None, data=None):
 		"""
 		Пока нет обращений к приложению оно не обновляет состояние, поэтому имитируем
-		обращение, для обновления данных
+		обращение, для обновления данных.
 		"""
-		while True:
-			clm.update_widget()
-			await sleep(0)
+		self.console_columns.update_widget()
+		loop.set_alarm_in(0.1, self.update_widget)
 
 	def ExecuteCommand(self, output_widget: object, command: str):
 		"""Глобальная консоль ввода:
