@@ -1,6 +1,7 @@
-from tui.urwid_terminal import ViewTui
-from gui.tk_terminal import ViewGui
 from sys import argv
+
+from gui.tk_terminal import ViewGui
+from tui.urwid_terminal import ViewTui
 
 if __name__ == '__main__':
 	for param in set(argv):

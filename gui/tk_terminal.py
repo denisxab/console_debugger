@@ -1,27 +1,24 @@
 __all__ = ["ViewGui"]
 
-from collections import deque
 from os.path import dirname
-from pickle import UnpicklingError
-from threading import Thread
 from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
 
 # from __init__ import *
-from date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
-from logic.mg_get_socket import _MgGetSocket
+from console_debugger.helpful.template_obj import ViewRoot
+from console_debugger.logic.mg_get_socket import MgGetSocket
 
 i = 0
 
 
-class ViewGui:
+class ViewGui(ViewRoot):
 	GREEN = "#487861"
 	BG_COLOR = "#171b22"
 	BLOCK_COLOR = "#0e1117"
 	TEXT_COLOR = "#cad0d9"
 	SIZE_TEXT_CONSOLE = 7
 
-	SeverGu: Optional[_MgGetSocket] = None
+	SeverGu: Optional[MgGetSocket] = None
 
 	def __init__(self):
 
@@ -44,65 +41,20 @@ class ViewGui:
 
 		self.windowTk.protocol("WM_DELETE_WINDOW", self.__del)
 
-		self.__run_Thread()
+		super().__init__()
+		MgGetSocket.RunThread(self)
 
 		self.windowTk.mainloop()
 
-	def __run_Thread(self):
-		Thread(target=ViewGui.CheckUpdateServer,
-		       args=(self,),
-		       daemon=True, ).start()
+	def PrintInfo(self, text: str):
+		print(text)
 
-	@classmethod
-	def CheckUpdateServer(cls, self):
-		"""
-		Проверять данные из сокета и обновлять внутреннею структуру
-		"""
-		try:
-			# Server
-			cls.SeverGu = _MgGetSocket()
-		except OSError as e:
-			cls.SeverGu = None
-			print(e)
-			exit(0)
+	def UpdateTitle(self, l_text: List[str]):
+		self.__deconstruct_widget()
+		self.__construct_widget(l_text)
 
-		print(cls.SeverGu.Port, "# Ran SeverMg")
-		cls.SeverGu.ConnectToClient()  # Ждем подключение клиента
-		print(f"# {cls.SeverGu.Host}:{cls.SeverGu.Port}\n")
-		#
-		title_name: List[str] = []
-
-		while True:
-			if cls.SeverGu.user:
-				if cls.SeverGu.user.fileno() != -1:  # Если сервер не отсоединился от клиента
-					try:
-						flag, id_, data_l = DataForSocket.GetDataObj(cls.SeverGu.user)
-
-						if flag == DataFlag:
-							self.Arr_textWidget[id_].insert("0.1", data_l[0])
-
-						elif flag == InitTitleNameFlag:
-							if title_name != data_l:
-								title_name = data_l
-								self.__deconstruct_widget()
-								self.__construct_widget(data_l)
-
-						elif flag == EndSend:
-							cls.SeverGu.UserClose()
-
-					except ConnectionResetError:  # Если клиент разорвал соединение
-						cls.SeverGu.UserClose()  # Закрыть соединение с клиентом
-						print("Клиент разорвал соединение")
-
-					except (UnpicklingError, EOFError):
-						print("Ошибка распаковки")
-
-					except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
-						cls.SeverGu.UserClose()  # Закрыть соединение с клиентом
-						print("Если клиенту невозможно отправить данные")
-
-				else:  # Если сервер отсоединился от клиента, то  ждать следующего подключение
-					cls.SeverGu.UserClose()
+	def SendTextInIndex(self, index: int, data: str):
+		self.Arr_textWidget[index].insert("0.1", data)
 
 	def __construct_widget(self, names_console: Optional[List[str]]):
 		"""
@@ -197,12 +149,12 @@ class ViewGui:
 			EntryInput_obj.delete(0, "end")
 
 		elif command[0] == 'g' and command[1] == "info":
-			ViewGui.display_info(f"{repr(ViewGui.SeverGu)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
+			ViewGui.display_info(f"{repr(self.SeverGet)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
 			EntryInput_obj.delete(0, "end")
 
-		elif command[0] == 'g' and command[1] == "run" and ViewGui.SeverGu == None:
-			self.__run_Thread()
-			EntryInput_obj.delete(0, "end")
+		# elif command[0] == 'g' and command[1] == "run" and self.SeverGet == None:
+		# 	self.__run_Thread()
+		# 	EntryInput_obj.delete(0, "end")
 
 	def _form_horizon_console(self, names_console: List[str],
 	                          frameConsoles: Frame,

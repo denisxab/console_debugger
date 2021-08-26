@@ -7,6 +7,7 @@ __all__ = [
 ]
 
 from typing import List, Callable
+
 import urwid
 
 
@@ -26,7 +27,7 @@ class ConsolesColumns(urwid.Columns):
 
 	# self.keypress(1,1)
 
-	def CreateNewTitleName(self, title_names: List[str]):
+	def UpdateTitle(self, title_names: List[str]):
 		"""
 		Создать новые консоли
 		"""
@@ -53,7 +54,7 @@ class ConsolesColumns(urwid.Columns):
 		self.contents[index_][0].body_txt.txt.insert_text(text_)
 		self.contents[index_][0].body_txt.txt.set_edit_pos(0)
 
-	def SendSelfInfo(self, text: str):
+	def PrintInfo(self, text: str):
 		self.SendTextInIndex(0, text)
 
 	def keypress(self, size, key):

@@ -1,26 +1,21 @@
 __all__ = ["ViewTui", ]
 
-from asyncio import sleep, get_event_loop
 from os import system
-from socket import gaierror
-from pickle import UnpicklingError
-from threading import Thread
-from typing import List, Optional
+from typing import List
 
 import urwid
+
+from console_debugger.helpful.template_obj import ViewRoot
+from console_debugger.logic.mg_get_socket import MgGetSocket
 from console_debugger.tui.urw_widget import ConsolesColumns
-from console_debugger.date_obj import DataForSocket, DataFlag, InitTitleNameFlag, EndSend
 from console_debugger.tui.urw_widget import MenuConsole, ConsoleFrame
-from console_debugger.logic.mg_get_socket import _MgGetSocket
 
 
-class ViewTui:
+class ViewTui(ViewRoot):
 	palette = [
 		('label_text1', 'light cyan', 'black',),
 	]
 	urwid.set_encoding('utf8')
-
-	SeverTu: Optional[_MgGetSocket] = None
 
 	def __init__(self):
 
@@ -40,8 +35,10 @@ class ViewTui:
 		                           palette=ViewTui.palette, )
 
 		self.loop.set_alarm_in(0.1, self.update_widget)
+
 		try:
-			self.__run_Thread()
+			super().__init__()
+			MgGetSocket.RunThread(self)
 			self.loop.run()
 		except KeyboardInterrupt:
 			print("Exit")
@@ -60,14 +57,17 @@ class ViewTui:
 		"""Глобальная консоль ввода:
 - `info` = Информация о сокете
 - `close` = Скрыть меню
-- `server <HOST> <PORT>` = Назначить прослушивание нового сокета
-- `help` = Подсказка
-- `run` = Перезапустить сервер"""
+- `help` = Подсказка"""
+
+		"""
+		- `server <HOST> <PORT>` = Назначить прослушивание нового сокета
+		- `run` = Перезапустить сервер
+		"""
 
 		command: List[str] = command.split()
 
 		if command[0] == "info":
-			output_widget.set_text(f"{repr(ViewTui.SeverTu)}\n")
+			output_widget.set_text(f"{repr(self.SeverGet)}\n")
 
 		elif command[0] == "close":
 			self.loop.widget = self.console_columns
@@ -76,76 +76,29 @@ class ViewTui:
 			output_widget.set_text(
 				f"{ConsolesColumns.keypress.__doc__}\n\n{ViewTui.ExecuteCommand.__doc__}\n\n{ConsoleFrame.ExecuteCommand.__doc__}")
 
-		elif len(command) == 3 and command[0] == "server":
-			try:
-				ViewTui.SeverTu.UserClose()
-				ViewTui.SeverTu = _MgGetSocket(Host=str(command[1]), Port=int(command[2]))
-				output_widget.set_text(f"{repr(ViewTui.SeverTu)}\n")
-				ViewTui.SeverTu.ConnectToClient()  # Ждем подключение клиента
+	# elif len(command) == 2 and command[0] == "server":
+	#
+	# 	try:
+	# 		self.SeverGet = MgGetSocket("localhost", int(command[1]))
+	# 		output_widget.set_text(f"{repr(self.SeverGet)}\n")
+	# 	except (gaierror, OSError) as e:
+	# 		self.SeverGet = None
+	# 		output_widget.set_text(f"# {e}")
+	#
+	# elif command[0] == "run":
+	# 	if self.SeverGet is None:
+	# 		MgGetSocket.RunThread(self)
+	# 	else:
+	# 		output_widget.set_text(f"Сервер уже запущен")
 
-			except (gaierror, OSError) as e:
-				output_widget.set_text(f"{e}")
+	def PrintInfo(self, text: str):
+		self.console_columns.PrintInfo(text)
 
-		elif command[0] == "run":
-			if ViewTui.SeverTu is None:
-				self.__run_Thread()
-			else:
-				output_widget.set_text(f"Сервер уже запущен")
+	def UpdateTitle(self, l_text: List[str]):
+		self.console_columns.UpdateTitle(l_text)
 
-	def __run_Thread(self):
-		Thread(target=ViewTui.CheckUpdateServer,
-		       args=(self.console_columns,),
-		       daemon=True, ).start()
-
-	@classmethod
-	def CheckUpdateServer(cls, clm: ConsolesColumns):
-		"""
-		Проверять данные из сокета и обновлять внутреннею структуру
-		"""
-
-		# Server
-		try:
-			cls.SeverTu = _MgGetSocket()
-		except OSError as e:
-			cls.SeverTu = None
-			clm.SendSelfInfo(f"# {e}")
-			exit(0)
-
-		clm.SendSelfInfo("# Run Server")
-		cls.SeverTu.ConnectToClient()  # Ждем подключение клиента
-		clm.SendSelfInfo(f"# {cls.SeverTu.Host}:{cls.SeverTu.Port}\n")
-		#
-		title_name: List[str] = []
-
-		while True:
-			if cls.SeverTu.user:
-				if cls.SeverTu.user.fileno() != -1:  # Если сервер не отсоединился от клиента
-					try:
-						flag, id_, data_l = DataForSocket.GetDataObj(cls.SeverTu.user)
-
-						if flag == DataFlag:
-							clm.SendTextInIndex(id_, data_l[0])
-
-						elif flag == InitTitleNameFlag:
-							if title_name != data_l:
-								title_name = data_l
-								clm.CreateNewTitleName(data_l)
-
-						elif flag == EndSend:
-							cls.SeverTu.UserClose()
-
-					except ConnectionResetError:  # Если клиент разорвал соединение
-						cls.SeverTu.UserClose()  # Закрыть соединение с клиентом
-						clm.SendSelfInfo("Клиент разорвал соединение")
-
-					except (UnpicklingError, EOFError):  # Не получилось распаковать данные
-						clm.SendSelfInfo("Ошибка распаковки")
-
-					except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
-						cls.SeverTu.UserClose()  # Закрыть соединение с клиентом
-						clm.SendSelfInfo("Если клиенту невозможно отправить данные")
-				else:  # Если сервер отсоединился от клиента, то ждать следующего подключение
-					cls.SeverTu.UserClose()
+	def SendTextInIndex(self, index: int, data: str):
+		self.console_columns.SendTextInIndex(index, data)
 
 
 if __name__ == '__main__':

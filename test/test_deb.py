@@ -107,7 +107,7 @@ class Test_debugger(unittest.TestCase):
         for i in range(10):
             printD(self.Debug, test_name1)
             printD(self.Debug, '1', '2', '3')
-            printD(self.Debug, str({'1', '2'}), ('2',), ['3'], "4")  # обрабатывать любой тип
+            printD(self.Debug, {'1', '2'}, ('2',), ['3'], "4")  # Обрабатывать любой тип
             printD(self.Info, TEST_NAME2)
             printD(self.Warning, TEST_NAME3)
             printD(self.TEST, random_word())

@@ -16,9 +16,9 @@ from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
 
 from console_debugger.helpful.coloring_text import style_t, StyleText
-from console_debugger.helpful.stup_debugger import ServerError
-from console_debugger.helpful.templates import *
-from console_debugger.logic.mg_send_socket import _MgSendSocket
+from console_debugger.helpful.template_obj import *
+from console_debugger.helpful.template_obj import ServerError
+from console_debugger.logic.mg_send_socket import MgSendSocket
 
 
 class Debugger:
@@ -28,7 +28,7 @@ class Debugger:
 	_global_len_rows: List[Tuple[str, int]] = []
 	_global_row_board: str = ""
 	# Экземпляр сокета
-	_socket_obj: Optional[_MgSendSocket] = None
+	_socket_obj: Optional[MgSendSocket] = None
 
 	def __init__(self,
 	             active: bool,
@@ -113,12 +113,13 @@ class Debugger:
 
 					"""
 					Чтобы данные не копировались каждый раз при передачи в функцию, делаем ссылку на текст
+					Так как разделение данных происходит по ТОЧКЕ то заменяем все точки на запятые
 					"""
 					res: List[str] = ["{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
 						next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
 						data=datetime.now().strftime('%H:%M:%S'),
 						name_var=names_var_str,
-						textOutput=f"{textOutput} {' '.join(str(item) for item in args)}",
+						textOutput=f"{str(textOutput).replace('.', ',')} {' '.join(str(item).replace('.', ',') for item in args)}",
 					)]
 
 					Debugger._socket_obj.PickleDataAndSendToServer(self.__id, res)
@@ -183,7 +184,7 @@ class Debugger:
 			# Запускам менеджер сокета
 			if typePrint == "socket":
 
-				Debugger._socket_obj = _MgSendSocket()
+				Debugger._socket_obj = MgSendSocket()
 
 				if not Debugger._socket_obj.ConnectToServer(Debugger.AllActiveInstance()):
 					Debugger._socket_obj = None
