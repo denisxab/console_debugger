@@ -119,7 +119,7 @@ class Debugger:
 						next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
 						data=datetime.now().strftime('%H:%M:%S'),
 						name_var=names_var_str,
-						textOutput=f"{str(textOutput).replace('.', ',')} {' '.join(str(item).replace('.', ',') for item in args)}",
+						textOutput=f"{str(textOutput)} {' '.join(str(item) for item in args)}",
 					)]
 
 					Debugger._socket_obj.PickleDataAndSendToServer(self.__id, res)
