@@ -1,18 +1,28 @@
-__all__ = ["DataForSocket",
-           "DataFlag",
-           "InitTitleNameFlag",
-           "EndSend"]
+__all__ = [
+	"DataForSocket",
+	"DataFlag",
+	"InitTitleNameFlag",
+	"EndSend",
+	"SOCKET_FILE",
+	"ServerError",
+	"ViewRoot",
+]
 
-from collections import deque
+from os.path import dirname
 from pickle import dumps, loads
 from socket import socket
-from typing import List, Tuple, Final
+from typing import List, Tuple, Final, Optional
 
 DataFlag: Final[bytes] = b'\0'  # Обычные данные
 InitTitleNameFlag: Final[bytes] = b'\1'  # Нужно создать консоли
 EndSend: Final[bytes] = b'\2'  # Если данные не удалось распаковать
 MyKey: Final[str] = "TRUE_CONNECT"  # Ключ подтверждения того что мы получились на правильный порт
-SIZE_BUFFER: int = 8
+SIZE_BUFFER: Final[int] = 8
+SOCKET_FILE: Final[str] = "{}/console_debugger.socket".format(
+	"/".join(dirname(__file__).replace("\\", "/").split("/")[:-1]))
+
+
+class ServerError(BaseException):    ...
 
 
 class DataForSocket:
@@ -79,3 +89,16 @@ class DataForSocket:
 		# print(f"{len_}: {len(len_)}")
 		client_socket.send(len_)
 		client_socket.send(data)
+
+
+class ViewRoot:
+
+	def __init__(self):
+		from console_debugger.logic.mg_get_socket import MgGetSocket
+		self.SeverGet: Optional[MgGetSocket] = None
+
+	def PrintInfo(self, text: str):        ...
+
+	def UpdateTitle(self, l_text: List[str]):        ...
+
+	def SendTextInIndex(self, index: int, data: str):        ...

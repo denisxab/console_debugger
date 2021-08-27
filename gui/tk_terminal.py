@@ -4,11 +4,8 @@ from os.path import dirname
 from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
 
-# from __init__ import *
-from console_debugger.helpful.template_obj import ViewRoot
+from console_debugger.helpful.date_obj import ViewRoot
 from console_debugger.logic.mg_get_socket import MgGetSocket
-
-i = 0
 
 
 class ViewGui(ViewRoot):
@@ -127,7 +124,6 @@ class ViewGui(ViewRoot):
 
 			save test.txt D:\
 
-		- g info = Показать глобальные настройки
 		"""
 
 		command = EntryInput_obj.get().split()
@@ -147,14 +143,6 @@ class ViewGui(ViewRoot):
 				ViewGui.display_info(f"{e}")
 
 			EntryInput_obj.delete(0, "end")
-
-		elif command[0] == 'g' and command[1] == "info":
-			ViewGui.display_info(f"{repr(self.SeverGet)}\n-----\nLen all debugger:\n {len(self.Arr_textWidget)}")
-			EntryInput_obj.delete(0, "end")
-
-		# elif command[0] == 'g' and command[1] == "run" and self.SeverGet == None:
-		# 	self.__run_Thread()
-		# 	EntryInput_obj.delete(0, "end")
 
 	def _form_horizon_console(self, names_console: List[str],
 	                          frameConsoles: Frame,

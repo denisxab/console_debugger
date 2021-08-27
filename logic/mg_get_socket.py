@@ -1,38 +1,32 @@
 __all__ = ["MgGetSocket"]
 
-from json import load
-from os.path import dirname
+import os
 from pickle import UnpicklingError
-from socket import socket, AF_INET, SOCK_STREAM, gaierror
+from socket import socket, SOCK_STREAM, gaierror, AF_UNIX
 from threading import Thread
 from typing import Optional, List
 
-from console_debugger.helpful.date_obj import DataForSocket, InitTitleNameFlag, DataFlag, EndSend
-from console_debugger.helpful.template_obj import ViewRoot
+from console_debugger.helpful.date_obj import DataForSocket, InitTitleNameFlag, DataFlag, EndSend, SOCKET_FILE, ViewRoot
 
 
 class MgGetSocket:
 
-	def __init__(self, Host: str = None, Port: int = None):
-		if not Host and not Port:
-			self.Host, self.Port = MgGetSocket._get_setting_socket()
-		else:
-			self.Host, self.Port = Host, Port
+	def __init__(self):
+
+		if os.path.exists(SOCKET_FILE):
+			os.remove(SOCKET_FILE)
 
 		self.user: Optional[socket] = None
 		self.address = None
 
 		# Конфигурация сокета, конфигурации должны быть одинаковые между сервером и клиентов
 		self.server_sock: socket = socket(
-			family=AF_INET,
+			family=AF_UNIX,
 			type=SOCK_STREAM,
 		)
 
 		# Адрес прослушивания
-		self.server_sock.bind((
-			self.Host,  # Адрес
-			self.Port,  # Порт
-		))
+		self.server_sock.bind(SOCKET_FILE)
 
 		# Разрешает сколько количество подключений
 		self.server_sock.listen(1)
@@ -41,27 +35,12 @@ class MgGetSocket:
 	def ConnectToClient(self):
 		self.UserClose()
 		self.user, self.address = self.server_sock.accept()  # Ждет данные от клиентов, не проходит дальше пока нет данных
-		# print(f"{self.Port}:{self.user.fileno()} ", "[CONNECTED] ", self.address)
 		DataForSocket.SendTrueConnect(self.user)  # Отправлять можно только байты
 
 	@staticmethod
-	def _get_setting_socket():
-		"""
-		Получить настройки сокета
-		"""
-		dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
-		dirs.append("setting_socket.json")
-		with open("/".join(dirs), "r") as f:
-			res = load(f)
-		return res["HOST"], res["PORT"]
-
-	def __repr__(self) -> str:
-		return f"Server:\n {self.Host}:{self.Port}\nConnect:\n {self.user.fileno() if self.user else None}"
-
-	@staticmethod
-	def RunThread(root_: ViewRoot, Host: str = None, Port: int = None):
+	def RunThread(root_: ViewRoot):
 		Thread(target=MgGetSocket.CheckUpdateServer,
-		       args=(root_, Host, Port),
+		       args=(root_,),
 		       daemon=True, ).start()
 
 	def UserClose(self):
@@ -70,22 +49,20 @@ class MgGetSocket:
 			self.user = None
 
 	@staticmethod
-	def CheckUpdateServer(root_: ViewRoot, Host: str, Port: int):
+	def CheckUpdateServer(root_: ViewRoot):
 		"""
 		Проверять данные из сокета и обновлять внутреннею структуру
 		"""
 
 		# Server
 		try:
-			root_.SeverGet = MgGetSocket(Host, Port)
+			root_.SeverGet = MgGetSocket()
 		except (gaierror, OSError) as e:
 			root_.SeverGet = None
 			root_.PrintInfo(f"# {e}")
 			exit(0)
 
-		root_.PrintInfo("# Run Server")
 		root_.SeverGet.ConnectToClient()  # Ждем подключение клиента
-		root_.PrintInfo(f"# {root_.SeverGet.Host}:{root_.SeverGet.Port}\n")
 
 		#
 		title_name: List[str] = []
@@ -124,21 +101,7 @@ class MgGetSocket:
 			else:
 				root_.SeverGet.ConnectToClient()
 
-
-# Разорвать соединение с клиентом
-# @staticmethod
-# def disconnect_client(user: socket) -> None:
-#     user.send("[EXIT]".encode("utf-8"))
-#     user.close()
-#
-#     print('{} {} {}'.format("*" * 40,
-#                             "Disconnect Client",
-#                             "*" * 40,
-#                             ))
-# Проверить данные, на условие разрыва соединения по инициативе клиента
-# @staticmethod
-# def is_connected(data: str) -> bool:
-#     return False if data == "exit" else True
+		root_.SeverGet.close()
 
 
 if __name__ == '__main__':

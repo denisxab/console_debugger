@@ -16,8 +16,8 @@ from sys import stdout
 from typing import TextIO, Tuple, Optional, Dict, List, Union
 
 from console_debugger.helpful.coloring_text import style_t, StyleText
+from console_debugger.helpful.date_obj import ServerError
 from console_debugger.helpful.template_obj import *
-from console_debugger.helpful.template_obj import ServerError
 from console_debugger.logic.mg_send_socket import MgSendSocket
 
 

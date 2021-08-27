@@ -5,15 +5,10 @@ __all__ = ["dopen",
            "printD",
            "dWARNING",
            "dEXCEPTION",
-           "ServerError",
            ]
 
 from io import DEFAULT_BUFFER_SIZE
-
-from typing import Union, List, Optional, Any
-
-
-class ServerError(BaseException):    ...
+from typing import Union, List, Any
 
 
 class StyleText:
@@ -28,17 +23,8 @@ class Debugger:
 	def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'): ...
 
 
-class ViewRoot:
-
-	def __init__(self):
-		from console_debugger.logic.mg_get_socket import MgGetSocket
-		self.SeverGet: Optional[MgGetSocket] = None
-
-	def PrintInfo(self, text: str):        ...
-
-	def UpdateTitle(self, l_text: List[str]):        ...
-
-	def SendTextInIndex(self, index: int, data: str):        ...
+def printD(name_instance: Debugger, text: Any, *args, **kwargs):
+	name_instance(text, *args, **kwargs)
 
 
 def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
@@ -77,7 +63,3 @@ dWARNING = {"active": True,
 dEXCEPTION = {"active": True,
               "title_name": "[EXCEPTION]",
               "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}
-
-
-def printD(name_instance: Debugger, text: Any, *args, **kwargs):
-	name_instance(text, *args, **kwargs)

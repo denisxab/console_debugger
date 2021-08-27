@@ -1,5 +1,4 @@
 /.idea
 /venv
 /gui/static/config.txt
-/gui/build_exe/main.build
-/gui/build_exe/main.cmd
+/console_debugger.socket

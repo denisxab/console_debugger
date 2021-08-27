@@ -5,7 +5,7 @@ from typing import List
 
 import urwid
 
-from console_debugger.helpful.template_obj import ViewRoot
+from console_debugger.helpful.date_obj import ViewRoot
 from console_debugger.logic.mg_get_socket import MgGetSocket
 from console_debugger.tui.urw_widget import ConsolesColumns
 from console_debugger.tui.urw_widget import MenuConsole, ConsoleFrame
@@ -55,41 +55,17 @@ class ViewTui(ViewRoot):
 
 	def ExecuteCommand(self, output_widget: object, command: str):
 		"""Глобальная консоль ввода:
-- `info` = Информация о сокете
 - `close` = Скрыть меню
 - `help` = Подсказка"""
 
-		"""
-		- `server <HOST> <PORT>` = Назначить прослушивание нового сокета
-		- `run` = Перезапустить сервер
-		"""
-
 		command: List[str] = command.split()
 
-		if command[0] == "info":
-			output_widget.set_text(f"{repr(self.SeverGet)}\n")
-
-		elif command[0] == "close":
+		if command[0] == "close":
 			self.loop.widget = self.console_columns
 
 		elif command[0] == "help":
 			output_widget.set_text(
 				f"{ConsolesColumns.keypress.__doc__}\n\n{ViewTui.ExecuteCommand.__doc__}\n\n{ConsoleFrame.ExecuteCommand.__doc__}")
-
-	# elif len(command) == 2 and command[0] == "server":
-	#
-	# 	try:
-	# 		self.SeverGet = MgGetSocket("localhost", int(command[1]))
-	# 		output_widget.set_text(f"{repr(self.SeverGet)}\n")
-	# 	except (gaierror, OSError) as e:
-	# 		self.SeverGet = None
-	# 		output_widget.set_text(f"# {e}")
-	#
-	# elif command[0] == "run":
-	# 	if self.SeverGet is None:
-	# 		MgGetSocket.RunThread(self)
-	# 	else:
-	# 		output_widget.set_text(f"Сервер уже запущен")
 
 	def PrintInfo(self, text: str):
 		self.console_columns.PrintInfo(text)
