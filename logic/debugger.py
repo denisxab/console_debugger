@@ -13,7 +13,7 @@ from inspect import currentframe
 from os.path import abspath, dirname
 from pprint import pformat
 from sys import stdout
-from typing import TextIO, Tuple, Optional, Dict, List, Union
+from typing import TextIO, Tuple, Optional, Dict, List, Union, Any
 
 from console_debugger.helpful.coloring_text import style_t, StyleText
 from console_debugger.helpful.date_obj import ServerError
@@ -29,6 +29,14 @@ class Debugger:
 	_global_row_board: str = ""
 	# Экземпляр сокета
 	_socket_obj: Optional[MgSendSocket] = None
+
+	def write(self, __s: str) -> Any:
+		"""
+		Для работы с функцией print
+		print("TEXT",file=a)
+		"""
+		if __s not in ("\n", "", " "):
+			self.__call__(__s)
 
 	def __init__(self,
 	             active: bool,

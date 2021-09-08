@@ -59,19 +59,18 @@
 
 ## 3 Использовать в коде
 
-Вызывать экземпляр напрямую
-
-- `Debug_Name(text,*args, sep=' ', end='\n')`
-    - `Debug_Name` = Имя экземпляра `Debugger`
+Использовать стандартную функцию `print`.
+- `print(text, file= Debug_Name)`
     - `text` = Строка
-    - `*args, sep=' ', end='\n'` = такие же, как и у встроенной функции `print()`
+    - `Debug_Name` = Имя экземпляра `Debugger`
 
-Либо использовать функцию `printD` для однородности
+Использовать функцию `printD`. Преимущество в том что может принимать несколько переменных и соеденять их.
 
 - `printD(Debug_Name, text, *args, sep=' ', end='\n')`
     - `Debug_Name` = Имя экземпляра `Debugger`
     - `text` = Строка
-    - `*args, sep=' ', end='\n'` = такие же, как и у встроенной функции `print()`
+    - `*args` = Данные преобразуются в тип `str`
+    - `sep=' ', end='\n'` = такие же, как и у встроенной функции `print()`
 
 ---
 
@@ -114,9 +113,9 @@ Debugger.GlobalManager(typePrint="grid")
 
 if __name__ == '__main__':
     for i in range(10):
-        Warning(random_word())
-        Debug(random_word())
-        Info(random_word())
+        printD(Debug, random_word())
+        printD(Warning, random_word())
+        printD(Info, random_word())
 ```
 
 ## Использовать готовые стили, вызывать `printD`
@@ -135,6 +134,23 @@ if __name__ == '__main__':
         printD(Debug, random_word())
         printD(Warning, random_word())
         printD(Info, random_word())
+```
+
+## Использовать готовые стили, вызывать `print`
+```python
+from console_debugger import *
+
+Debug = Debugger(**dDEBUG)
+Info = Debugger(**dINFO)
+Warning = Debugger(**dWARNING)
+
+Debugger.GlobalManager(typePrint="socket")
+
+if __name__ == '__main__':
+    for i in range(10):
+	print(random_word(), file=Debug)
+	print(random_word(), file=Info)
+	print(random_word(), file=Warning)
 ```
 
 ## Использовать `soket`
@@ -186,6 +202,35 @@ ResD = Debugger(True, "[Result]", style_text=dstyle(len_word=25, height=4))
 
 printD(HotKeyD,"Crtl+c")
 ```
+
+# Пример трассировки переменных
+
+```python
+import random
+import string
+
+random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(1, 40)))
+
+from console_debugger import *
+
+if __name__ == '__main__':
+	a = Debugger(**dDEBUG)
+	b = Debugger(**dINFO)
+	c = Debugger(**dEXCEPTION)
+
+	Debugger.GlobalManager(typePrint="socket")
+
+	TracingName1 = "1"
+	TracingName2 = ["1"]
+	TracingName3 = "1",
+
+	for x in range(10):
+		printD(a, TracingName1)
+		printD(b, TracingName2)
+		printD(c, TracingName3)
+```
+![](https://i.imgur.com/8ctYa9G.png)
+
 
 ## Использование во `Flask`
 
@@ -297,9 +342,9 @@ xrdb -query
 
 ## Про режим отображения Urwid
 
-![](https://i.imgur.com/DaThb5O.png)
+![](https://i.imgur.com/EQ8MLhG.png)
 Работает также в терминале Pycharm
-![](https://i.imgur.com/DduI7JP.png)
+![](https://i.imgur.com/hJlPVZn.png)
 
 
 Этот режим поддерживается в терминалах Linux. Программа находиться в `console_debugger/tui/main.py`.
