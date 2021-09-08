@@ -8,18 +8,18 @@ __all__ = [
 	"ViewRoot",
 ]
 
-from os.path import dirname
 from pickle import dumps, loads
 from socket import socket
 from typing import List, Tuple, Final, Optional
+
+from helpful.template_obj import rel_path
 
 DataFlag: Final[bytes] = b'\0'  # Обычные данные
 InitTitleNameFlag: Final[bytes] = b'\1'  # Нужно создать консоли
 EndSend: Final[bytes] = b'\2'  # Если данные не удалось распаковать
 MyKey: Final[str] = "TRUE_CONNECT"  # Ключ подтверждения того что мы получились на правильный порт
-SIZE_BUFFER: Final[int] = 8
-SOCKET_FILE: Final[str] = "{}/console_debugger.socket".format(
-	"/".join(dirname(__file__).replace("\\", "/").split("/")[:-1]))
+SIZE_BUFFER: Final[int] = 8  # Размер для числа которое указывает размер следующего за ним сегмента (Размер в битах)
+SOCKET_FILE: Final[str] = rel_path(-1, "console_debugger.socket")  # Путь к сокет файлу
 
 
 class ServerError(BaseException):    ...

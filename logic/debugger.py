@@ -137,7 +137,6 @@ class Debugger:
 	def GlobalManager(cls, *, global_status: Optional[bool] = None, typePrint: Optional[str] = "grid"):
 		"""
 		Глобальная настройка всех экземпляров
-
 		:param: typePrint: Отвечает за стиль вывода данных на экран
 		:param: global_active: Можно on/off все экземпляры разом
 		"""
@@ -161,7 +160,7 @@ class Debugger:
 				rowBoard: str = ""
 				rowWord: str = ""
 				arr: List[str] = []
-				for k, v in Debugger._all_instance.items():
+				for k, v in cls._all_instance.items():
 					if v.__active:
 						v1 = v.style_text.copy()
 						v1['agl'] = 'center'  # что бы центрировать только заголовки, а не весь текст
@@ -184,20 +183,22 @@ class Debugger:
 			# Запускам менеджер сокета
 			if typePrint == "socket":
 
-				Debugger._socket_obj = MgSendSocket()
+				cls._socket_obj = MgSendSocket()
 
-				if not Debugger._socket_obj.ConnectToServer(Debugger.AllActiveInstance()):
-					Debugger._socket_obj = None
+				if not cls._socket_obj.ConnectToServer(cls.AllActiveInstance()):
+					cls._socket_obj = None
 					dirs = dirname(__file__).replace("\\", "/").split("/")[:-1]
 					dirs.append("main.py tui")
-					raise ServerError('Вероятно сервер не запущен\n\n {}'.format(
-						"/".join(dirs)
-					))
+					raise ServerError(
+						'Вероятно сервер не запущен\n{0}\nВыполните команду:\n\npython {1}\n\n{0}\n'.format("*" * 80,
+						                                                                                    "/".join(
+							                                                                                    dirs)
+						                                                                                    ))
 
 				return None
 
 			else:
-				Debugger._socket_obj = None
+				cls._socket_obj = None
 
 	# --- Other method --- #
 
