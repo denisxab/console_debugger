@@ -6,7 +6,7 @@ from socket import socket, SOCK_STREAM, AF_UNIX, error
 from sys import argv
 from typing import List
 
-from console_debugger.helpful.date_obj import DataForSocket, SOCKET_FILE, ServerError
+from helpful.date_obj import DataForSocket, SOCKET_FILE, ServerError
 
 
 class MgSendSocket:

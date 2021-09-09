@@ -4,9 +4,8 @@ from os.path import dirname
 from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
 from typing import List, Optional
 
-from console_debugger.helpful.date_obj import ViewRoot
-from console_debugger.logic.mg_get_socket import MgGetSocket
-
+from helpful.date_obj import ViewRoot
+from logic.mg_get_socket import MgGetSocket
 
 class ViewGui(ViewRoot):
 	GREEN = "#487861"

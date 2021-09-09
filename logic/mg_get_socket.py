@@ -6,7 +6,7 @@ from socket import socket, SOCK_STREAM, gaierror, AF_UNIX
 from threading import Thread
 from typing import Optional, List
 
-from console_debugger.helpful.date_obj import DataForSocket, InitTitleNameFlag, DataFlag, EndSend, SOCKET_FILE, ViewRoot
+from helpful.date_obj import DataForSocket, InitTitleNameFlag, DataFlag, EndSend, SOCKET_FILE, ViewRoot
 
 
 class MgGetSocket:

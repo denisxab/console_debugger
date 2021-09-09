@@ -12,7 +12,7 @@ from pickle import dumps, loads
 from socket import socket
 from typing import List, Tuple, Final, Optional
 
-from console_debugger.helpful.template_obj import rel_path
+from template_obj import rel_path
 
 DataFlag: Final[bytes] = b'\0'  # Обычные данные
 InitTitleNameFlag: Final[bytes] = b'\1'  # Нужно создать консоли
@@ -94,7 +94,7 @@ class DataForSocket:
 class ViewRoot:
 
 	def __init__(self):
-		from console_debugger.logic.mg_get_socket import MgGetSocket
+		from logic.mg_get_socket import MgGetSocket
 		self.SeverGet: Optional[MgGetSocket] = None
 
 	def PrintInfo(self, text: str):        ...

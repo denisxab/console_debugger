@@ -1,10 +1,11 @@
 from sys import argv, path
-from helpful.template_obj import add_sys_path_if_not, rel_path
-add_sys_path_if_not(rel_path(-2), path)
 
+from template_obj import add_sys_path_if_not, rel_path
 
-from console_debugger.gui.tk_terminal import ViewGui
-from console_debugger.tui.urwid_terminal import ViewTui
+add_sys_path_if_not(rel_path(0), path)
+
+from gui.tk_terminal import ViewGui
+from tui.urwid_terminal import ViewTui
 
 if __name__ == '__main__':
 	for param in set(argv):

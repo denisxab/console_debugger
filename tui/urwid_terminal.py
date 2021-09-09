@@ -5,10 +5,10 @@ from typing import List
 
 import urwid
 
-from console_debugger.helpful.date_obj import ViewRoot
-from console_debugger.logic.mg_get_socket import MgGetSocket
-from console_debugger.tui.urw_widget import ConsolesColumns
-from console_debugger.tui.urw_widget import MenuConsole, ConsoleFrame
+from helpful.date_obj import ViewRoot
+from logic.mg_get_socket import MgGetSocket
+from tui.urw_widget import ConsolesColumns
+from tui.urw_widget import MenuConsole, ConsoleFrame
 
 
 class ViewTui(ViewRoot):

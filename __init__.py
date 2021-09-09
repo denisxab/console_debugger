@@ -1,5 +1,5 @@
-from console_debugger.logic.debugger import *
+from logic.debugger import *
 
 if __name__ == '__main__':
-    # Защита чтобы ide не убирал импорт
-    print(Debugger.AllActiveInstance)
+	# Защита чтобы ide не убирал импорт
+	print(Debugger.AllActiveInstance)

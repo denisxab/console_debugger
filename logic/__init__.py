@@ -1,7 +1,7 @@
 from sys import path
 
-from console_debugger.helpful.template_obj import add_sys_path_if_not, rel_path
+from template_obj import add_sys_path_if_not, rel_path
 
 add_sys_path_if_not(rel_path(-2), path)
 
-from console_debugger.logic.debugger import Debugger
+from logic.debugger import Debugger

@@ -23,14 +23,16 @@ def add_sys_path_if_not(add_path: str, sys_path: List[str]):
 		sys_path.append(add_path)
 
 
-def rel_path(slice_end: int, add_path: str = ""):
+def rel_path(slice_end: int = 0, add_path: str = ""):
 	"""
 	Обрезает относительный путь, и может добавлять к нему другой путь:
 	:param slice_end: Срез с конца
 	:param add_path: Добавить путь
 	:return:
 	"""
-	p = dirname(__file__).replace("\\", "/").split("/")[:slice_end]
+	p = dirname(__file__).replace("\\", "/").split("/")
+	if slice_end:
+		p = p[:slice_end]
 	if add_path:
 		p.append(add_path.replace("\\", "/"))
 	return "/".join(p)
