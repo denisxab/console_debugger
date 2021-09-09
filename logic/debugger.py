@@ -202,7 +202,6 @@ class Debugger:
 						                                                                                    "/".join(
 							                                                                                    dirs)
 						                                                                                    ))
-
 				return None
 
 			else:

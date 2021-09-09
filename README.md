@@ -295,18 +295,34 @@ Session: {{ session }}
 ```
 
 ## Использование в `Django`
+Добавить в самый конец `NameProj/settings.py`
 ```python
-import os
-from console_debugger import Debugger
+import os 
+from console_debugger import *
 
+...
+...
+...
 
-if not os.environ.get('console_debugger', False):
-    os.environ['console_debugger'] = "True"
-    print("1")
+Info = Debugger(**dINFO)
+Debug = Debugger(**dDEBUG)
+Worning = Debugger(**dWARNING)
+
+if not os.environ.get('console_debugger', False): # Для защиты от двойного запуска Django
+	os.environ['console_debugger'] = "True"
 else:
-    print("2")
-    Debugger.GlobalManager(typePrint="socket")
+	Debugger.GlobalManager(typePrint="socket")
 ```
+`NameApp/views.py`
+```python
+from NameProj.settings import Info,Debug,Worning
+from console_debugger import printD 
+
+printD(Info,"1")
+printD(Info,"2")
+printD(Info,"3")
+```
+
 # Советы
 
 
