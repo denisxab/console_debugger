@@ -294,7 +294,19 @@ Session: {{ session }}
 </form>
 ```
 
+## Использование в `Django`
+```python
+import os
+from console_debugger import Debugger
 
+
+if not os.environ.get('console_debugger', False):
+    os.environ['console_debugger'] = "True"
+    print("1")
+else:
+    print("2")
+    Debugger.GlobalManager(typePrint="socket")
+```
 # Советы
 
 
