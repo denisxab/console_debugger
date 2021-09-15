@@ -1,6 +1,6 @@
 # Что это?
 
-Это библиотека для Python, которая выводит информации в несколько консолей. Путем обмена данных через Unix Socket
+:wrench: :pencil: :desktop_computer: Это библиотека для Python, которая выводит информации в несколько консолей. Путем обмена данных через Unix Socket
 
 Установка через [pip - console-debugger](https://pypi.org/project/console-debugger/)
 
