@@ -65,7 +65,7 @@ class MgGetSocket:
 		root_.SeverGet.ConnectToClient()  # Ждем подключение клиента
 
 		#
-		title_name: List[str] = []
+		titleName: List[str] = []
 
 		while root_.SeverGet:
 
@@ -78,8 +78,8 @@ class MgGetSocket:
 							root_.SendTextInIndex(id_, data_l[0])
 
 						elif flag == InitTitleNameFlag:
-							if title_name != data_l:
-								title_name = data_l
+							if titleName != data_l:
+								titleName = data_l
 								root_.UpdateTitle(data_l)
 
 						elif flag == EndSend:

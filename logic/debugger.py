@@ -1,9 +1,4 @@
-__all__ = [
-
-	"Debugger",
-	"style_t",
-
-]
+__all__ = ["Debugger", "printD"]
 
 from datetime import datetime
 from inspect import currentframe
@@ -37,19 +32,19 @@ class Debugger:
 
 	def __init__(self,
 	             active: bool,
-	             title_name: str,
+	             titleName: str,
 	             *,
 	             fileConfig: Optional[Dict] = None,
-	             style_text: Optional[dstyle] = None,
+	             styleText: Optional[dstyle] = None,
 	             consoleOutput: bool = True,
 	             ):
 		"""
 		public set:
 			+ consoleOutput = Вывод в консоль
-			+ style_text = Стиль отображения
+			+ styleText = Стиль отображения
 
 		public get:
-			+ title_name = Уникальное имя дебагера
+			+ titleName = Уникальное имя дебагера
 			+ fileConfig = Конфигурация для файла
 			+ AllInstance = Все экземпляры дебагеров
 			+ AllActiveInstance() = Все активные дебагеры
@@ -57,13 +52,13 @@ class Debugger:
 			+ AllUseFileName() = Все используемые имена файлов
 		"""
 
-		# title_name
-		self.__title_name: str = title_name
+		# titleName
+		self.__titleName: str = titleName
 
 		# active
 		self.__active: bool = active
-		if self.__active and self.__title_name in Debugger.AllActiveInstance():
-			raise NameError("A instance of a class can only have to unique title_name")
+		if self.__active and self.__titleName in Debugger.AllActiveInstance():
+			raise NameError("A instance of a class can only have to unique titleName")
 
 		# fileConfig
 		self.__fileConfig: Optional[Dict] = fileConfig
@@ -73,11 +68,11 @@ class Debugger:
 		# consoleOutput
 		self.consoleOutput: Optional[TextIO] = stdout if consoleOutput else None
 
-		# style_text
-		self.style_text: dstyle = dstyle(len_word=len(self.__title_name)) if not style_text else style_text
+		# styleText
+		self.styleText: dstyle = dstyle(len_word=len(self.__titleName)) if not styleText else styleText
 
 		# id
-		Debugger._all_instance[title_name] = self  # Это строчка должны быть выше назначения self.__id !
+		Debugger._all_instance[self.__titleName] = self  # Это строчка должны быть выше назначения self.__id !
 		self.__id = len(Debugger.AllActiveInstance()) - 1
 
 	def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'):
@@ -89,7 +84,7 @@ class Debugger:
 				with open(**self.__fileConfig) as f:
 					# Сохранять в файл не стилизованный текст
 					print(
-						f"|{self.__title_name}|{textOutput}|",
+						f"|{self.__titleName}|{textOutput}|",
 						*args,
 						sep=sep, end=end, file=f)
 
@@ -97,7 +92,7 @@ class Debugger:
 				# Вывод в виде Таблицы
 				if Debugger._global_len_rows:
 					print(self.__designerTable(style_t(textOutput.replace("\t", ""),
-					                                   **self.style_text)), end='')
+					                                   **self.styleText)), end='')
 
 				#
 				elif Debugger._socket_obj:
@@ -131,9 +126,9 @@ class Debugger:
 				# Без стилей
 				else:
 					print(
-						"|{}|\t{}".format(self.__title_name,
+						"|{}|\t{}".format(self.__titleName,
 						                  style_t(f"{textOutput} {' '.join(str(item) for item in args)}",
-						                          **self.style_text)),
+						                          **self.styleText)),
 						*args,
 						sep=sep, end=end)
 
@@ -166,7 +161,7 @@ class Debugger:
 				arr: List[str] = []
 				for k, v in cls._all_instance.items():
 					if v.__active:
-						v1 = v.style_text.copy()
+						v1 = v.styleText.copy()
 						v1['agl'] = 'center'  # что бы центрировать только заголовки, а не весь текст
 						text = style_t(k, **v1).present_text
 						rowBoard += f"+{'-' * len(text)}"
@@ -223,14 +218,14 @@ class Debugger:
 		"""
 		Dependencies:
 			- Debugger.GlobalLenRows:
-			- self.style_text: Нужно знать размеры ячейки
+			- self.styleText: Нужно знать размеры ячейки
 			- self._title: Нужно знать заголовок для идентификации
 		"""
 		res_print: str = ""
 		for height_item in textOutput.present_text.split('\n'):
-			height_item = style_t(height_item, **self.style_text).style_text
+			height_item = style_t(height_item, **self.styleText).styleText
 			for item in Debugger._global_len_rows:
-				if item[0] == self.__title_name:
+				if item[0] == self.__titleName:
 					res_print += f"|{height_item}"
 				else:
 					res_print += f"|{' ' * item[1]}"
@@ -256,7 +251,7 @@ class Debugger:
 		"""
 		# Имена активных дебагеров
 		"""
-		return [v.title_name for v in Debugger._all_instance.values()
+		return [v.titleName for v in Debugger._all_instance.values()
 		        if v.is_active]
 
 	@staticmethod
@@ -264,7 +259,7 @@ class Debugger:
 		"""
 		# Имена остановленных дебагеров
 		"""
-		return [v.title_name for v in Debugger._all_instance.values()
+		return [v.titleName for v in Debugger._all_instance.values()
 		        if not v.is_active]
 
 	@staticmethod
@@ -272,7 +267,7 @@ class Debugger:
 		"""
 		# Используемые файлы для записи
 		"""
-		return {v.fileConfig["file"]: v.title_name for v in
+		return {v.fileConfig["file"]: v.titleName for v in
 		        Debugger._all_instance.values()
 		        if v.fileConfig}
 
@@ -291,11 +286,11 @@ class Debugger:
 		return self.__fileConfig
 
 	@property
-	def title_name(self) -> str:
+	def titleName(self) -> str:
 		"""
 		Получить уникальное имя экземпляра
 		"""
-		return self.__title_name
+		return self.__titleName
 
 	@property
 	def is_active(self) -> bool:
@@ -313,7 +308,11 @@ class Debugger:
 		return pformat(res, indent=1, width=30, depth=2)
 
 	def __str__(self) -> str:
-		return self.__title_name
+		return self.__titleName
+
+
+def printD(name_instance: Debugger, text: Any, *args, **kwargs):
+	name_instance(text, *args, **kwargs)
 
 
 if __name__ == '__main__':

@@ -16,15 +16,15 @@ pip install console-debugger
 
 ## 1 Сначала нужно создать экземпляры класса Debugger
 
-Debugger(`active: bool, title_name: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, style_text: Optional[dstyle] = None`)
+Debugger(`active: bool, titleName: str, consoleOutput: bool = True, fileConfig: Optional[Dict] = None, styleText: Optional[dstyle] = None`)
 
 | Атрибут         | Описание                                                                                                                                                                                                                   |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `active`        | on/off жизни экземпляра, Если `False` экземпляр будет игнорировать вызов, а также будет добавлен в массив `Debugger.AllCountSleepInstance` .                                                                               |
-| `title_name`    | Уникальное имя экземпляра которое будет отображаться в выводе.                                                                                                                                                             |
+| `titleName`    | Уникальное имя экземпляра которое будет отображаться в выводе.                                                                                                                                                             |
 | `consoleOutput` | on/off отображения в консоль или другие визуальные выходы, **Не влияет на запись в файл!** .                                                                                                                               |
 | `fileConfig`    | Конфигурация записи в файл, входные параметры такие же как и у стандартной функции `open()` передавать в формате `{"file":"test.log", ... }` . Для удобного формирования параметров можно пользоваться функцией `dopen()`. |
-| `style_text`    | Стиль отображения текста. Для удобного формирования параметров можно пользоваться функцией `dstyle`.                                                                                                                       |
+| `styleText`    | Стиль отображения текста. Для удобного формирования параметров можно пользоваться функцией `dstyle`.                                                                                                                       |
 
 ---
 
@@ -44,13 +44,13 @@ Debugger(`**console_debugger.dDEBUG`)
 | public set      | Описание                           |
 | --------------- | ---------------------------------- |
 | `consoleOutput` | Переключить on/off вывод в консоль |
-| `style_text`    | Задать другой стиль текста         |
+| `styleText`    | Задать другой стиль текста         |
 | `active()`      | Включить дебагер                   |
 | `deactivate()`  | Отключить дебагер                  |
 
 | public get                 | Описание                                    |
 | -------------------------- | ------------------------------------------- |
-| `title_name`               | Уникальное имя дебагера                     |
+| `titleName`               | Уникальное имя дебагера                     |
 | `fileConfig`               | Конфигурация для файла                      |
 | `AllCountActiveInstance()` | Список со всеми активными экземплярами      |
 | `AllCountSleepInstance() ` | Список со всеми остановленными экземплярами |
@@ -119,24 +119,24 @@ random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range
 ```python
 from console_debugger import *
 
-Debug = Debugger(True,title_name="[DEBUG]",
+Debug = Debugger(True,titleName="[DEBUG]",
 
                  fileConfig=dopen(file="debug.log",
                                   mode="a",
                                   encoding="utf-8"),
 
-                 style_text=dstyle(bg_color="bg_blue",
+                 styleText=dstyle(bg_color="bg_blue",
                                    len_word=21)
                  )
-Info = Debugger(True,title_name="[INFO]",
+Info = Debugger(True,titleName="[INFO]",
 
                 fileConfig={"file": "info.log",
                             "mode": "a", "encoding": "utf-8"},
-                style_text=dstyle(len_word=25),
+                styleText=dstyle(len_word=25),
 
                 consoleOutput=False
                 )
-Warning = Debugger(True,"[WARNING]", style_text=dstyle(len_word=25))
+Warning = Debugger(True,"[WARNING]", styleText=dstyle(len_word=25))
 
 Debugger.GlobalManager(typePrint="grid")
 
@@ -233,7 +233,7 @@ from console_debugger import *
 HotKeyD = Debugger(True, "[HotKey]")
 PressKeyD = Debugger(True, "[PressKey]")
 InfoD = Debugger(**dINFO)
-ResD = Debugger(True, "[Result]", style_text=dstyle(len_word=25, height=4))
+ResD = Debugger(True, "[Result]", styleText=dstyle(len_word=25, height=4))
 
 printD(HotKeyD,"Crtl+c")
 ```

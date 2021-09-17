@@ -31,17 +31,17 @@ COLORS = {'grey': 30,
 
 
 class StyleText:
-    __slots__ = ("present_text", "style_text")
+    __slots__ = ("present_text", "styleText")
 
-    def __init__(self, present_text: str, style_text: str):
+    def __init__(self, present_text: str, styleText: str):
         self.present_text: str = present_text
-        self.style_text: str = style_text
+        self.styleText: str = styleText
 
     def __repr__(self) -> str:
         return self.present_text
 
     def __str__(self) -> str:
-        return self.style_text
+        return self.styleText
 
 
 def style_t(text: str,
@@ -129,7 +129,7 @@ def cprint(text, color: str = None,
            flush=False,
            len_word: int = None,
            ):
-    print(style_t(text, color, bg_color, attrs, len_word).style_text, sep=sep, end=end, file=file, flush=flush)
+    print(style_t(text, color, bg_color, attrs, len_word).styleText, sep=sep, end=end, file=file, flush=flush)
 
 
 if __name__ == '__main__':

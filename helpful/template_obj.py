@@ -1,6 +1,5 @@
 __all__ = ["dopen",
            "dstyle",
-           "printD",
            "dDEBUG",
            "dINFO",
            "dWARNING",
@@ -8,11 +7,11 @@ __all__ = ["dopen",
            ]
 
 from io import DEFAULT_BUFFER_SIZE
-from typing import Union, List, Any
+from typing import Union, List
 
 
 class StyleText:
-	def __init__(self, present_text: str, style_text: str):        ...
+	def __init__(self, present_text: str, styleText: str):        ...
 
 	def __repr__(self) -> str: ...
 
@@ -23,11 +22,7 @@ class Debugger:
 	def __call__(self, textOutput: Union[str, StyleText], *args, sep=' ', end='\n'): ...
 
 
-def printD(name_instance: Debugger, text: Any, *args, **kwargs):
-	name_instance(text, *args, **kwargs)
-
-
-def dopen(file, mode='a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
+def dopen(file: str, mode: str = 'a', buffering=None, encoding=None, errors=None, newline=None, closefd=True):
 	return {"file": file,
 	        "mode": mode,
 	        "buffering": buffering if buffering else DEFAULT_BUFFER_SIZE,
@@ -52,14 +47,14 @@ def dstyle(color: str = None,
 
 
 dDEBUG = {"active": True,
-          "title_name": "[DEBUG]",
-          "style_text": dstyle(**{"len_word": 25})}
+          "titleName": "[DEBUG]",
+          "styleText": dstyle(**{"len_word": 25})}
 dINFO = {"active": True,
-         "title_name": "[INFO]",
-         "style_text": dstyle(**{"color": "blue", "len_word": 25})}
+         "titleName": "[INFO]",
+         "styleText": dstyle(**{"color": "blue", "len_word": 25})}
 dWARNING = {"active": True,
-            "title_name": "[WARNING]",
-            "style_text": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31})}
+            "titleName": "[WARNING]",
+            "styleText": dstyle(**{"color": "yellow", "attrs": ["bold"], "len_word": 31})}
 dEXCEPTION = {"active": True,
-              "title_name": "[EXCEPTION]",
-              "style_text": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}
+              "titleName": "[EXCEPTION]",
+              "styleText": dstyle(**{"color": "red", "attrs": ["bold"], "len_word": 31})}

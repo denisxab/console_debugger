@@ -2,7 +2,8 @@ import random
 import string
 import time
 
-from console_debugger.logic.debugger import printD, Debugger, dINFO, dDEBUG
+from console_debugger import dDEBUG, dINFO
+from console_debugger.logic.debugger import printD, Debugger
 
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(30, 100)))

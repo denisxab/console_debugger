@@ -5,8 +5,9 @@ import time
 import unittest
 from os.path import dirname
 
-from console_debugger.helpful.coloring_text import StyleText, cprint
-from console_debugger.logic.debugger import printD, Debugger, dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen, style_t
+from console_debugger.helpful.coloring_text import StyleText, cprint, style_t
+from console_debugger.helpful.template_obj import dINFO, dWARNING, dDEBUG, dEXCEPTION, dopen
+from console_debugger.logic.debugger import printD, Debugger
 
 # Сгенерировать случайное слово
 random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(30, 100)))
@@ -34,7 +35,7 @@ class Test_debugger(unittest.TestCase):
 
 		Debugger.GlobalManager(typePrint="grid")
 
-		self.assertEqual(self.Debug.title_name, '[DEBUG]')
+		self.assertEqual(self.Debug.titleName, '[DEBUG]')
 		self.assertEqual(self.Debug.AllActiveInstance(), ['[DEBUG]', '[INFO]', '[WARNING]', 'TEST_File'])
 		self.assertEqual(self.Debug.AllSleepInstance(), ['TEST'])
 		self.assertEqual(self.Debug.AllUseFileName(),
@@ -54,20 +55,20 @@ class Test_debugger(unittest.TestCase):
 		                  'mode': 'a',
 		                  'newline': None})
 
-		# Нельзя добавлять дебагеры с одинаковым `title_name`
+		# Нельзя добавлять дебагеры с одинаковым `titleName`
 		with self.assertRaises(NameError):
-			Debug2 = Debugger(True, title_name="[DEBUG]")
+			Debug2 = Debugger(True, titleName="[DEBUG]")
 
 		# Нельзя добавлять дебагеры с одинаковым именем файла `fileConfig`
 		with self.assertRaises(FileExistsError):
-			Debug2 = Debugger(True, title_name="test",
+			Debug2 = Debugger(True, titleName="test",
 			                  fileConfig=dopen(file="debug.log",
 			                                   mode="w"), )
 
 	def test__str__repr__(self):
 		self.assertEqual(str(self.Debug), "[DEBUG]")
 
-		self.assertEqual(len(repr(self.Debug)), 675)
+		self.assertEqual(len(repr(self.Debug)), 668)
 		printD(self.Debug, '1', '2', '3')
 
 	# @unittest.skip("grid")
@@ -78,9 +79,9 @@ class Test_debugger(unittest.TestCase):
 		for i in range(10):
 			printD(self.Debug, random_word())
 			printD(self.Info, random_word())
-			printD(self.Warning, random_word())
-			printD(self.TEST, random_word())
-			printD(self.TEST_File, random_word())
+			# printD(self.Warning, random_word())
+			# printD(self.TEST, random_word())
+			# printD(self.TEST_File, random_word())
 
 	# @unittest.skip("None")
 	def test_GlobalManager_none(self):
@@ -103,7 +104,7 @@ class Test_debugger(unittest.TestCase):
 		TEST_NAME3 = "123"
 		TEST_NAME4 = random_word()
 
-		for i in range(0,10):
+		for i in range(0, 10):
 			printD(self.Debug, test_name1)
 			printD(self.Debug, '1', '2', '3')
 			printD(self.Debug, {'1', '2'}, ('2',), ['3'], "4")  # Обрабатывать любой тип
@@ -112,14 +113,14 @@ class Test_debugger(unittest.TestCase):
 			printD(self.TEST, random_word())
 			printD(self.TEST_File, TEST_NAME4)
 
-		for i in range(10,20):
+		for i in range(10, 20):
 			printD(self.Debug, i)
 			printD(self.Info, i)
 			printD(self.Warning, i)
 			printD(self.TEST, i)
 			printD(self.TEST_File, i)
 
-		for i in range(20,30):
+		for i in range(20, 30):
 			print(i, file=self.Debug)
 			print(i, file=self.Info)
 			print(i, file=self.Warning)
@@ -146,13 +147,13 @@ class Test_debugger(unittest.TestCase):
 			self.assertEqual(v._Debugger__active, True)
 
 	def test_local_active_deactivate(self):
-		self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance())
+		self.assertIn(self.Debug.titleName, Debugger.AllActiveInstance())
 		self.Debug.active()
-		self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance())
+		self.assertIn(self.Debug.titleName, Debugger.AllActiveInstance())
 		self.Debug.deactivate()
-		self.assertNotIn(self.Debug.title_name, Debugger.AllActiveInstance())
+		self.assertNotIn(self.Debug.titleName, Debugger.AllActiveInstance())
 		self.Debug.active()
-		self.assertIn(self.Debug.title_name, Debugger.AllActiveInstance())
+		self.assertIn(self.Debug.titleName, Debugger.AllActiveInstance())
 
 	def test_templates(self):
 		global random_word
@@ -204,20 +205,20 @@ class Test_coloring_text(unittest.TestCase):
 		1. Выравнивание текста
 		"""
 
-		self.assertEqual(list(style_t("123", len_word=10, agl="center").style_text),
+		self.assertEqual(list(style_t("123", len_word=10, agl="center").styleText),
 		                 [' ', ' ', ' ', '1', '2', '3', ' ', ' ', ' ', ' '])
 
-		self.assertEqual(list(style_t("1234", len_word=10, agl="center").style_text),
+		self.assertEqual(list(style_t("1234", len_word=10, agl="center").styleText),
 		                 [' ', ' ', ' ', '1', '2', '3', '4', ' ', ' ', ' '])
 
-		self.assertEqual(list(style_t("1234", len_word=3, agl="center").style_text),
+		self.assertEqual(list(style_t("1234", len_word=3, agl="center").styleText),
 		                 ['1', '.', '.'])
 
 		""" 
 		 2.2 проверка не удалять элемент из пустого массива +
 		"""
 		test_pop = style_t("", len_word=10)
-		self.assertEqual(test_pop.style_text, "")
+		self.assertEqual(test_pop.styleText, "")
 		self.assertEqual(test_pop.present_text, "")
 
 		list_true = [
@@ -279,22 +280,22 @@ class Test_coloring_text(unittest.TestCase):
 		3. Удлинять короткие слова +
 		"""
 		for true_data, test_set in zip(list_true, list_test):
-			self.assertEqual(list(style_t(test_set, len_word=10).style_text), true_data[0])
+			self.assertEqual(list(style_t(test_set, len_word=10).styleText), true_data[0])
 			self.assertEqual(list(style_t(test_set, len_word=10).present_text), true_data[1])
 
-			self.assertEqual(list(style_t(test_set, len_word=2).style_text), true_data[2])
+			self.assertEqual(list(style_t(test_set, len_word=2).styleText), true_data[2])
 			self.assertEqual(list(style_t(test_set, len_word=2).present_text), true_data[3])
 
 			self.assertEqual(list(style_t(test_set, len_word=2, height=10).present_text), true_data[4])
 			self.assertEqual(list(style_t(test_set, len_word=2, height=3).present_text), true_data[5])
 
-			self.assertEqual(list(style_t(test_set, len_word=2, height=10).style_text), true_data[6])
-			self.assertEqual(list(style_t(test_set, len_word=2, height=3).style_text), true_data[7])
+			self.assertEqual(list(style_t(test_set, len_word=2, height=10).styleText), true_data[6])
+			self.assertEqual(list(style_t(test_set, len_word=2, height=3).styleText), true_data[7])
 
 		"""
 		4. Применять стили к тексту
 		"""
-		self.assertEqual(style_t("123", color="red", bg_color="bg_blue", attrs=["bold"]).style_text,
+		self.assertEqual(style_t("123", color="red", bg_color="bg_blue", attrs=["bold"]).styleText,
 		                 '\x1b[1m\x1b[44m\x1b[31m123\x1b[0m')
 
 		cprint("123", color="red", bg_color="bg_blue", attrs=["bold"])
