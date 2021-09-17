@@ -1,12 +1,9 @@
-__all__ = ["dopen",
-           "style_t",
-           "dstyle",
-           "Debugger",
-           "printD",
-           "dDEBUG",
-           "dINFO",
-           "dWARNING",
-           "dEXCEPTION"]
+__all__ = [
+
+	"Debugger",
+	"style_t",
+
+]
 
 from datetime import datetime
 from inspect import currentframe
@@ -17,7 +14,7 @@ from typing import TextIO, Tuple, Optional, Dict, List, Union, Any
 
 from helpful.coloring_text import style_t, StyleText
 from helpful.date_obj import ServerError
-from template_obj import *
+from helpful.template_obj import dstyle
 from logic.mg_send_socket import MgSendSocket
 
 
@@ -121,7 +118,6 @@ class Debugger:
 
 					"""
 					Чтобы данные не копировались каждый раз при передачи в функцию, делаем ссылку на текст
-					Так как разделение данных происходит по ТОЧКЕ то заменяем все точки на запятые
 					"""
 					res: List[str] = ["{next_steep}\n{data}{name_var}\n{textOutput}\n".format(
 						next_steep=f"{'-' * (len(names_var_str) + 7)}¬",
@@ -161,10 +157,10 @@ class Debugger:
 					v.__active = False
 				return None
 
-		# Если нет глобально статуса или, активировались все экземпляры, то обрабатываем логику стилей
+		# Обрабатываем логику стилей вывода, только когда global_active == None|True
 		elif global_status is None or global_status:
-			# Отображать таблицу в консоли
-			if typePrint == "grid":
+
+			if typePrint == "grid":  # Отображать таблицу в консоли
 				rowBoard: str = ""
 				rowWord: str = ""
 				arr: List[str] = []
@@ -188,8 +184,7 @@ class Debugger:
 				cls._global_len_rows.clear()
 				cls._global_row_board = ""
 
-			# Запускам менеджер сокета
-			if typePrint == "socket":
+			if typePrint == "socket":  # Запускам менеджер сокета
 
 				cls._socket_obj = MgSendSocket()
 

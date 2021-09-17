@@ -7,6 +7,7 @@ from typing import List, Optional
 from helpful.date_obj import ViewRoot
 from logic.mg_get_socket import MgGetSocket
 
+
 class ViewGui(ViewRoot):
 	GREEN = "#487861"
 	BG_COLOR = "#171b22"

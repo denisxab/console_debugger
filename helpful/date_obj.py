@@ -12,7 +12,7 @@ from pickle import dumps, loads
 from socket import socket
 from typing import List, Tuple, Final, Optional
 
-from template_obj import rel_path
+from helpful.path_helper import rel_path
 
 DataFlag: Final[bytes] = b'\0'  # Обычные данные
 InitTitleNameFlag: Final[bytes] = b'\1'  # Нужно создать консоли
