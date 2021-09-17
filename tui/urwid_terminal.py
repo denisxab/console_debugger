@@ -1,5 +1,6 @@
 __all__ = ["ViewTui", ]
 
+from os import system
 from typing import List
 
 import urwid
@@ -41,7 +42,7 @@ class ViewTui(ViewRoot):
 			self.loop.run()
 		except KeyboardInterrupt:
 			print("Exit")
-			# system("clear")
+			system("clear")
 			exit()
 
 	def update_widget(self, loop=None, data=None):

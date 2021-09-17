@@ -13,8 +13,10 @@ def add_sys_path_if_not(add_path: str, sys_path: List[str]):
 		sys_path.append(add_path)
 
 
-def rel_path(slice_end: int = 0, add_path: str = ""):
+def root_path(slice_end: int = 0, add_path: str = ""):
 	"""
+	Внимание!!! Путь отображается от места где находится сам файл `path_helper.py`
+
 	Обрезает относительный путь, и может добавлять к нему другой путь:
 	:param slice_end: Срез с конца
 	:param add_path: Добавить путь

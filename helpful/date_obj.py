@@ -12,14 +12,14 @@ from pickle import dumps, loads
 from socket import socket
 from typing import List, Tuple, Final, Optional
 
-from helpful.path_helper import rel_path
+from path_helper import root_path
 
 DATA_FLAG: Final[bytes] = b'\0'  # Обычные данные
 INIT_TITLE_NAME_FLAG: Final[bytes] = b'\1'  # Нужно создать консоли
 END_SEND: Final[bytes] = b'\2'  # Если данные не удалось распаковать
 KEY_TRUE_CONNECT: Final[str] = "TRUE_CONNECT"  # Ключ подтверждения того что мы получились на правильный порт
 SIZE_BUFFER: Final[int] = 8  # Размер для числа которое указывает размер следующего за ним сегмента (Размер в битах)
-SOCKET_FILE: Final[str] = rel_path(-1, "console_debugger.socket")  # Путь к сокет файлу
+SOCKET_FILE: Final[str] = root_path(-1, "console_debugger.socket")  # Путь к сокет файлу
 
 
 class ServerError(BaseException):    ...
