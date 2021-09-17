@@ -1,9 +1,9 @@
 __all__ = [
-	"DataForSocket",
-	"DataFlag",
-	"InitTitleNameFlag",
-	"EndSend",
+	"DATA_FLAG",
+	"INIT_TITLE_NAME_FLAG",
+	"END_SEND",
 	"SOCKET_FILE",
+	"DataForSocket",
 	"ServerError",
 	"ViewRoot",
 ]
@@ -14,10 +14,10 @@ from typing import List, Tuple, Final, Optional
 
 from helpful.path_helper import rel_path
 
-DataFlag: Final[bytes] = b'\0'  # Обычные данные
-InitTitleNameFlag: Final[bytes] = b'\1'  # Нужно создать консоли
-EndSend: Final[bytes] = b'\2'  # Если данные не удалось распаковать
-MyKey: Final[str] = "TRUE_CONNECT"  # Ключ подтверждения того что мы получились на правильный порт
+DATA_FLAG: Final[bytes] = b'\0'  # Обычные данные
+INIT_TITLE_NAME_FLAG: Final[bytes] = b'\1'  # Нужно создать консоли
+END_SEND: Final[bytes] = b'\2'  # Если данные не удалось распаковать
+KEY_TRUE_CONNECT: Final[str] = "TRUE_CONNECT"  # Ключ подтверждения того что мы получились на правильный порт
 SIZE_BUFFER: Final[int] = 8  # Размер для числа которое указывает размер следующего за ним сегмента (Размер в битах)
 SOCKET_FILE: Final[str] = rel_path(-1, "console_debugger.socket")  # Путь к сокет файлу
 
@@ -33,7 +33,7 @@ class DataForSocket:
 		"""
 		Отправить ключевое слово, в подтверждение о подключение
 		"""
-		user.send(MyKey.encode("ascii"))
+		user.send(KEY_TRUE_CONNECT.encode("ascii"))
 
 	@staticmethod
 	def GetDataObj(user: socket) -> Tuple[bytes, int, List[str]]:
@@ -50,7 +50,7 @@ class DataForSocket:
 			# return DataFlag, 0, ["0"]
 			return loads(data_bytes)
 		else:
-			return EndSend, 0, [""]
+			return END_SEND, 0, [""]
 
 	# CLIENT
 	@staticmethod
@@ -58,7 +58,7 @@ class DataForSocket:
 		"""
 		Проверить ответ сервера на корректность.
 		"""
-		return True if data_validate.decode("ascii") == MyKey else False
+		return True if data_validate.decode("ascii") == KEY_TRUE_CONNECT else False
 
 	@staticmethod
 	def SendInitTitleName(client_socket: socket, init_title_name: List[str]):
@@ -66,7 +66,7 @@ class DataForSocket:
 		Отправить заголовки консолей
 		"""
 		data = dumps(
-			(InitTitleNameFlag, -1, init_title_name),
+			(INIT_TITLE_NAME_FLAG, -1, init_title_name),
 			protocol=3)
 		len_ = len(data).to_bytes(SIZE_BUFFER, byteorder='big')
 		# print("SendInitTitleName")
@@ -81,7 +81,7 @@ class DataForSocket:
 		Отправить на сервер, данные для конкретной консоли
 		"""
 		data = dumps(
-			(DataFlag, id_, text_send),
+			(DATA_FLAG, id_, text_send),
 			protocol=3)
 		len_ = len(data).to_bytes(SIZE_BUFFER, byteorder='big')
 		# print("SendDataObj")

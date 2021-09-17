@@ -6,7 +6,7 @@ from socket import socket, SOCK_STREAM, gaierror, AF_UNIX
 from threading import Thread
 from typing import Optional, List
 
-from helpful.date_obj import DataForSocket, InitTitleNameFlag, DataFlag, EndSend, SOCKET_FILE, ViewRoot
+from helpful.date_obj import DataForSocket, INIT_TITLE_NAME_FLAG, DATA_FLAG, END_SEND, SOCKET_FILE, ViewRoot
 
 
 class MgGetSocket:
@@ -74,15 +74,15 @@ class MgGetSocket:
 					try:
 						flag, id_, data_l = DataForSocket.GetDataObj(root_.SeverGet.user)
 
-						if flag == DataFlag:
+						if flag == DATA_FLAG:
 							root_.SendTextInIndex(id_, data_l[0])
 
-						elif flag == InitTitleNameFlag:
+						elif flag == INIT_TITLE_NAME_FLAG:
 							if titleName != data_l:
 								titleName = data_l
 								root_.UpdateTitle(data_l)
 
-						elif flag == EndSend:
+						elif flag == END_SEND:
 							root_.SeverGet.ConnectToClient()
 
 					except ConnectionAbortedError:  # Если клиенту невозможно отправить данные от отключаемся
