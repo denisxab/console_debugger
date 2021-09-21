@@ -105,7 +105,7 @@ printD(`Debug_Name, text, *args, sep=' ', end='\n'`)
 
 # Примеры
 
-## Использовать свои стили, вызывать экземпляры напрямую
+## Использовать свои стили оформления
 
 Для наглядности создадим функцию для генерации случайного слово
 
@@ -205,6 +205,31 @@ for i in range(10):
     printD(Info, random_word())
     printD(Warning, random_word())
     printD(TEST, random_word())
+```
+
+Если вы не запустили сервер, у вас возникнет исключение `ServerError: Ошибка сервера`
+Это специальное исключения для того чтобы вы лично выбрали интерфейс отображения.
+Вы можете выполнить команду `python /.../.../.local/lib/python3.9/site-packages/console_debugger/main.py tui`
+в любом терминале Linux, в нем запуститься псевдографический интерфейс.
+
+Или вы можете выполнить команду `python /.../.../.local/lib/python3.9/site-packages/console_debugger/main.pyп gui`
+Тогда у вас запуститься графический интерфейс Tkinter.
+
+```
+[Errno 2] No such file or directory
+ServerError: Ошибка сервера
+Traceback (most recent call last):
+  File "/home/denis/Applications/test_imp.py", line 17, in <module>
+    Debugger.GlobalManager(typePrint="socket")
+  File "/.../.../.local/lib/python3.9/site-packages/console_debugger/logic/debugger.py", line 190, in GlobalManager
+    raise ServerError(
+helpful.date_obj.ServerError: Вероятно сервер не запущен
+********************************************************************************
+Выполните команду:
+
+python /.../.../.local/lib/python3.9/site-packages/console_debugger/main.py tui
+
+********************************************************************************
 ```
 
 ## Использование Глобального режима on/off
