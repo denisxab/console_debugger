@@ -30,12 +30,12 @@ Debugger(`active: bool, titleName: str, consoleOutput: bool = True, fileConfig: 
 
 Также можно использовать готовые параметры
 
-Debugger(`**console_debugger.dDEBUG`)
+Debugger(`**dDEBUG`)
 
-- `console_debugger.dDEBUG`
-- `console_debugger.dINFO`
-- `console_debugger.dWARNING`
-- `console_debugger.dEXCEPTION`
+- `dDEBUG`
+- `dINFO`
+- `dWARNING`
+- `dEXCEPTION`
 
 ---
 
@@ -117,7 +117,8 @@ random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range
 ```
 
 ```python
-from console_debugger import *
+from console_debugger import Debugger, printD
+from console_debugger.helpful.template_obj import dopen, dstyle
 
 Debug = Debugger(True,titleName="[DEBUG]",
 
@@ -150,7 +151,8 @@ if __name__ == '__main__':
 ## Использовать готовые стили, вызывать `printD`
 
 ```python
-from console_debugger import *
+from console_debugger import Debugger, printD
+from console_debugger.helpful.template_obj import dDEBUG, dWARNING, dINFO
 
 Debug = Debugger(**dDEBUG)
 Info = Debugger(**dINFO)
@@ -168,7 +170,8 @@ if __name__ == '__main__':
 ## Использовать готовые стили, вызывать `print`
 
 ```python
-from console_debugger import *
+from console_debugger import Debugger, printD
+from console_debugger.helpful.template_obj import dDEBUG, dWARNING, dINFO
 
 Debug = Debugger(**dDEBUG)
 Info = Debugger(**dINFO)
@@ -186,8 +189,8 @@ if __name__ == '__main__':
 ## Использовать `soket`
 
 ```python
-from console_debugger import *
-
+from console_debugger import Debugger, printD
+from console_debugger.helpful.template_obj import dDEBUG, dWARNING, dINFO
 
 Debug = Debugger(**dDEBUG)
 Info = Debugger(**dINFO)
@@ -229,7 +232,9 @@ if __name__ == '__main__':
 В других модулях создаем необходимые экземпляры
 
 ```python
-from console_debugger import *
+from console_debugger import Debugger, printD
+from console_debugger.helpful.template_obj import dstyle, dINFO
+
 HotKeyD = Debugger(True, "[HotKey]")
 PressKeyD = Debugger(True, "[PressKey]")
 InfoD = Debugger(**dINFO)
@@ -241,12 +246,8 @@ printD(HotKeyD,"Crtl+c")
 ## Пример трассировки переменных
 
 ```python
-import random
-import string
-
-random_word = lambda: "".join(random.choice(string.ascii_letters) for j in range(random.randint(1, 40)))
-
-from console_debugger import *
+from console_debugger import Debugger, printD
+from console_debugger.helpful.template_obj import dDEBUG, dWARNING, dINFO
 
 if __name__ == '__main__':
 	a = Debugger(**dDEBUG)
@@ -272,7 +273,8 @@ if __name__ == '__main__':
 Поместить `Debugger.GlobalManager` в `@app.before_first_request`
 
 ```python
-from console_debugger import *
+from console_debugger import Debugger, printD
+
 from flask import *
 
 SECRET_KEY = "123_very_hard_password"
@@ -338,7 +340,8 @@ Session: {{ session }}
 
 ```python
 import os
-from console_debugger import *
+from console_debugger import Debugger
+from console_debugger.helpful.template_obj import dDEBUG, dWARNING, dINFO
 
 ...
 ...
