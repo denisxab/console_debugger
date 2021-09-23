@@ -1,7 +1,7 @@
 __all__ = ["ViewGui"]
 
 from os.path import dirname
-from tkinter import Tk, Frame, Button, Text, Entry, messagebox, PhotoImage
+from tkinter import Button, Entry, Frame, PhotoImage, Text, Tk, messagebox
 from typing import List, Optional
 
 from helpful.date_obj import ViewRoot
@@ -23,8 +23,8 @@ class ViewGui(ViewRoot):
 		self.windowTk.title("debugger_tk")
 
 		img = PhotoImage("{path_}/static/icons.ico".format(
-			path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])
-		))
+				path_="/".join(dirname(__file__).replace("\\", "/").split("/")[:-1])
+				))
 
 		# self.windowTk.iconbitmap(img)
 		self.windowTk.tk.call('wm', 'iconphoto', self.windowTk._w, img)
@@ -94,22 +94,21 @@ class ViewGui(ViewRoot):
 				return f.read()
 
 		except FileNotFoundError:
-			return "{X}x{Y}+{W}+{H}".format(
-				X=600,
-				Y=600,
-				W=self.windowTk.winfo_screenwidth() // 2 - 160,
-				H=self.windowTk.winfo_screenheight() // 2 - 160,
-			)
+			return "{w}x{h}+{x}+{y}".format(
+					w=self.windowTk.winfo_screenwidth() // 2 - 160,
+					h=self.windowTk.winfo_screenheight() // 2 - 160,
+					x=600,
+					y=600, )
 
 	def __set_geometer(self):
 		"""
 		Записать положение и размер окна в файл
 		"""
 		with open(f"{dirname(__file__)}/static/config.txt", "w")as f:
-			x = self.windowTk.winfo_x()
-			y = self.windowTk.winfo_y()
 			w = self.windowTk.winfo_width()
 			h = self.windowTk.winfo_height()
+			x = self.windowTk.winfo_x()
+			y = self.windowTk.winfo_y()
 			f.write(f"{w}x{h}+{x}+{y}")
 
 	def ExecuteCommand(self, event, index_console: int, EntryInput_obj: Entry):
