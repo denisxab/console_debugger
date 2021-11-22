@@ -368,24 +368,28 @@ import os
 from console_debugger import Debugger
 from console_debugger.helpful.template_obj import dDEBUG, dWARNING, dINFO
 
+
+DEBUG = True
 ...
 ...
 ...
 
-Info = Debugger(**dINFO)
-Debug = Debugger(**dDEBUG)
-Worning = Debugger(**dWARNING)
+if DEBUG:
 
-if not os.environ.get('console_debugger', False): # Для защиты от двойного запуска Django
-	os.environ['console_debugger'] = "True"
-else:
-	Debugger.GlobalManager(typePrint="socket")
+    Info = Debugger(**dINFO)
+    Debug = Debugger(**dDEBUG)
+    Warning = Debugger(**dWARNING)
+    
+    if not os.environ.get('console_debugger', False): # Для защиты от двойного запуска Django
+        os.environ['console_debugger'] = "True"
+    else:
+        Debugger.GlobalManager(typePrint="socket")
 ```
 
 `NameApp/views.py`
 
 ```python
-from NameProj.settings import Info,Debug,Worning
+from NameProj.settings import Info,Debug,Warning
 from console_debugger import printD
 
 printD(Info,"1")
