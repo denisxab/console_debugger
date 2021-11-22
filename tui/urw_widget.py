@@ -8,10 +8,10 @@ __all__ = [
 
 from typing import List, Callable
 
-import urwid
+from urwid import Frame, LineBox, Columns, Text, Edit, ListBox, SimpleFocusListWalker, Divider
 
 
-class ConsolesColumns(urwid.Columns):
+class ConsolesColumns(Columns):
 	"""
 	Колоны с консолями
 	"""
@@ -117,7 +117,7 @@ class ConsolesColumns(urwid.Columns):
 		return self.__index_column[0]
 
 
-class ConsoleFrame(urwid.Frame):
+class ConsoleFrame(Frame):
 	"""
 	Объект консоль
 		- Заголовок
@@ -133,29 +133,29 @@ class ConsoleFrame(urwid.Frame):
 		bod_line, \
 		Lbot_top, Lbot_bot, Rbot_top, Rbot_bot, = self.__get_char_table()
 
-		header = urwid.LineBox(urwid.Text(title, align="center"),
-		                       tlcorner=Ltop_top,
-		                       blcorner=Ltop_bot,
-		                       rline=bod_line,
-		                       trcorner=Rtop_top,
-		                       brcorner=Rtop_bot,
-		                       )
+		header = LineBox(Text(title, align="center"),
+		                 tlcorner=Ltop_top,
+		                 blcorner=Ltop_bot,
+		                 rline=bod_line,
+		                 trcorner=Rtop_top,
+		                 brcorner=Rtop_bot,
+		                 )
 
 		self.body_txt = EditListBox()
 
-		body = urwid.LineBox(self.body_txt,
-		                     bline='',
-		                     tline='',
-		                     rline=bod_line,
-		                     )
+		body = LineBox(self.body_txt,
+		               bline='',
+		               tline='',
+		               rline=bod_line,
+		               )
 
-		footer = urwid.LineBox(EditLine(fun_execute_command=self.ExecuteCommand, output_widget=self.body_txt.txt, ),
-		                       tlcorner=Lbot_top,
-		                       blcorner=Lbot_bot,
-		                       rline=bod_line,
-		                       trcorner=Rbot_top,
-		                       brcorner=Rbot_bot,
-		                       )
+		footer = LineBox(EditLine(fun_execute_command=self.ExecuteCommand, output_widget=self.body_txt.txt, ),
+		                 tlcorner=Lbot_top,
+		                 blcorner=Lbot_bot,
+		                 rline=bod_line,
+		                 trcorner=Rbot_top,
+		                 brcorner=Rbot_bot,
+		                 )
 
 		super().__init__(body, header, footer, focus_part='body')
 
@@ -219,7 +219,7 @@ class ConsoleFrame(urwid.Frame):
 		return res
 
 
-class EditLine(urwid.Edit):
+class EditLine(Edit):
 	"""
 	Однострочное поле для ввода текста | команд
 	"""
@@ -244,7 +244,7 @@ class EditLine(urwid.Edit):
 		super(EditLine, self).keypress(size, key)
 
 
-class EditListBox(urwid.ListBox):
+class EditListBox(ListBox):
 	"""
 	Многострочное текстовое поле
 	"""
@@ -252,15 +252,15 @@ class EditListBox(urwid.ListBox):
 
 	def __init__(self):
 		self.__index_style = 0
-		self.txt = urwid.Edit(multiline=True, align="left")
-		body = urwid.SimpleFocusListWalker([self.txt])
+		self.txt = Edit(multiline=True, align="left")
+		body = SimpleFocusListWalker([self.txt])
 		super(EditListBox, self).__init__(body)
 
 	def keypress(self, size, key):
 		super(EditListBox, self).keypress(size, key)
 
 
-class MenuConsole(urwid.LineBox):
+class MenuConsole(LineBox):
 	"""
 	Меню:
 		- Консоль
@@ -268,14 +268,14 @@ class MenuConsole(urwid.LineBox):
 	"""
 
 	def __init__(self, fun_execute_command, root_):
-		self.output_menu = urwid.Text("", align="left")
+		self.output_menu = Text("", align="left")
 		root_.ExecuteCommand(self.output_menu, "help")
 
 		self.text_menu = EditLine(output_widget=self.output_menu, fun_execute_command=fun_execute_command, )
 
-		line_menu = urwid.Divider("-")
-		body = urwid.SimpleFocusListWalker([self.text_menu, line_menu, self.output_menu])
-		self.list_box_menu = urwid.ListBox(body)
+		line_menu = Divider("-")
+		body = SimpleFocusListWalker([self.text_menu, line_menu, self.output_menu])
+		self.list_box_menu = ListBox(body)
 		super().__init__(self.list_box_menu, title="",
 		                 title_align="center",
 		                 title_attr=None,

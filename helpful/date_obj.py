@@ -1,11 +1,11 @@
 __all__ = [
-	"DATA_FLAG",
-	"INIT_TITLE_NAME_FLAG",
-	"END_SEND",
-	"SOCKET_FILE",
-	"DataForSocket",
-	"ServerError",
-	"ViewRoot",
+		"DATA_FLAG",
+		"INIT_TITLE_NAME_FLAG",
+		"END_SEND",
+		"SOCKET_FILE",
+		"DataForSocket",
+		"ServerError",
+		"ViewRoot",
 ]
 
 from pickle import dumps, loads
@@ -26,7 +26,7 @@ class ServerError(BaseException):    ...
 
 
 class DataForSocket:
-
+	
 	# SERVER
 	@staticmethod
 	def SendTrueConnect(user: socket):
@@ -34,7 +34,7 @@ class DataForSocket:
 		Отправить ключевое слово, в подтверждение о подключение
 		"""
 		user.send(KEY_TRUE_CONNECT.encode("ascii"))
-
+	
 	@staticmethod
 	def GetDataObj(user: socket) -> Tuple[bytes, int, List[str]]:
 		"""
@@ -51,7 +51,7 @@ class DataForSocket:
 			return loads(data_bytes)
 		else:
 			return END_SEND, 0, [""]
-
+	
 	# CLIENT
 	@staticmethod
 	def CheckResponseWithServer(data_validate: bytes) -> bool:
@@ -59,30 +59,30 @@ class DataForSocket:
 		Проверить ответ сервера на корректность.
 		"""
 		return True if data_validate.decode("ascii") == KEY_TRUE_CONNECT else False
-
+	
 	@staticmethod
 	def SendInitTitleName(client_socket: socket, init_title_name: List[str]):
 		"""
 		Отправить заголовки консолей
 		"""
 		data = dumps(
-			(INIT_TITLE_NAME_FLAG, -1, init_title_name),
-			protocol=3)
+				(INIT_TITLE_NAME_FLAG, -1, init_title_name),
+				protocol=3)
 		len_ = len(data).to_bytes(SIZE_BUFFER, byteorder='big')
 		# print("SendInitTitleName")
 		# print(f"{data}:{len(data)}")
 		# print(f"{len_}: {len(len_)}")
 		client_socket.send(len_)
 		client_socket.send(data)
-
+	
 	@staticmethod
 	def SendDataObj(client_socket: socket, id_: int, text_send: List[str]):
 		"""
 		Отправить на сервер, данные для конкретной консоли
 		"""
 		data = dumps(
-			(DATA_FLAG, id_, text_send),
-			protocol=3)
+				(DATA_FLAG, id_, text_send),
+				protocol=3)
 		len_ = len(data).to_bytes(SIZE_BUFFER, byteorder='big')
 		# print("SendDataObj")
 		# print(f"{data}:{len(data)}")
@@ -92,13 +92,13 @@ class DataForSocket:
 
 
 class ViewRoot:
-
+	
 	def __init__(self):
 		from logic.mg_get_socket import MgGetSocket
 		self.SeverGet: Optional[MgGetSocket] = None
-
+	
 	def PrintInfo(self, text: str):        ...
-
+	
 	def UpdateTitle(self, l_text: List[str]):        ...
-
+	
 	def SendTextInIndex(self, index: int, data: str):        ...
