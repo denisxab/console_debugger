@@ -1,4 +1,5 @@
 /.idea
 /venv
+/venvs
 /gui/static/config.txt
 /console_debugger.socket
